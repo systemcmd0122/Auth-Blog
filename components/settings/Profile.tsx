@@ -130,7 +130,7 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
 
   return (
     <motion.div
-      className="min-h-screen bg-white flex items-center justify-center p-4"
+      className="min-h-screen bg-white flex items-start justify-center p-4" // 修正箇所: items-center を items-start に変更
       initial="hidden"
       animate="visible"
       variants={containerVariants}

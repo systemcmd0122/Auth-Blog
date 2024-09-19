@@ -1,11 +1,10 @@
-"use client"
+'use client'
 
 import React from 'react';
 import { BlogType } from "@/types";
 import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { CalendarDays, User, ArrowRight } from "lucide-react";
 
 interface BlogItemProps {
@@ -19,12 +18,9 @@ interface BlogItemProps {
 
 const BlogItem: React.FC<BlogItemProps> = ({ blog }) => {
   return (
-    <motion.div
-      className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl"
-      whileHover={{ scale: 1.02 }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+    <div
+      className="relative bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-105 hover:shadow-xl cursor-pointer"
+      style={{ willChange: "transform, box-shadow" }}  // GPUアクセラレーションを有効化
     >
       <Link href={`blog/${blog.id}`} className="block">
         <div className="relative aspect-video overflow-hidden">
@@ -52,14 +48,18 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog }) => {
           </div>
         </div>
       </Link>
+
       <div className="p-4">
         <p className="text-gray-600 mb-4 line-clamp-3">{blog.content}</p>
-        <Link href={`blog/${blog.id}`} className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200">
+        <Link
+          href={`blog/${blog.id}`}
+          className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200"
+        >
           Read more
           <ArrowRight className="w-4 h-4 ml-1" />
         </Link>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -4,6 +4,7 @@ import React, { useState, useTransition } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Info } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -215,6 +216,19 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
                 ) : null}
                 <span>編集する</span>
               </Button>
+              <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+                <h3 className="text-xl font-bold mb-4 flex items-center">
+                  <Info className="mr-2" />
+                  テキスト装飾ガイド
+                </h3>
+                <ul className="list-disc list-inside space-y-2">
+                  <li><code>```code```</code> - コードブロック（コピー可能）</li>
+                  <li><code>**text**</code> - 太字</li>
+                  <li><code>__text__</code> - 下線</li>
+                  <li><code>==text==</code> - ハイライト</li>
+                  <li><code>[リンクテキスト](URL)</code> - ハイパーリンク</li>
+                </ul>
+              </div>
             </div>
           </form>
         </Form>
