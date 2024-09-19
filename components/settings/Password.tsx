@@ -1,9 +1,14 @@
 "use client"
 
-import { useState, useTransition } from "react"
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import React, { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { Loader2, EyeOffIcon, EyeIcon, CheckCircle } from "lucide-react";
+
 import {
   Form,
   FormControl,
@@ -11,53 +16,69 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Loader2, EyeOffIcon, EyeIcon } from "lucide-react"
-import { PasswordSchema } from "@/schemas"
-import { setPassword } from "@/actions/auth"
-import { useRouter } from "next/navigation"
-import toast from "react-hot-toast"
-import FormError from "@/components/auth/FormError"
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PasswordSchema } from "@/schemas";
+import { setPassword } from "@/actions/auth";
 
 const Password = () => {
-  const router = useRouter()
-  const [error, setError] = useState("")
-  const [passwordVisibility1, setPasswordVisibility1] = useState(false)
-  const [passwordVisibility2, setPasswordVisibility2] = useState(false)
-  const [isPending, startTransition] = useTransition()
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [passwordVisibility1, setPasswordVisibility1] = useState(false);
+  const [passwordVisibility2, setPasswordVisibility2] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const form = useForm<z.infer<typeof PasswordSchema>>({
+  const form = useForm({
     resolver: zodResolver(PasswordSchema),
     defaultValues: {
       password: "",
       confirmation: "",
     },
-  })
+  });
 
-  const onSubmit = (values: z.infer<typeof PasswordSchema>) => {
-    setError("")
+  const onSubmit = (values: { password: string; confirmation: string; }) => {
+    setError("");
+    setIsSuccess(false);
+
     startTransition(async () => {
       try {
-        const res = await setPassword(values)
+        const res = await setPassword({ ...values });
+
         if (res?.error) {
-          setError(res.error)
-          return
+          setError(res.error);
+          return;
         }
-        toast.success("パスワードを変更しました")
-        form.reset()
-        router.refresh()
+
+        setIsSuccess(true);
+        toast.success("パスワードを変更しました", {
+          icon: "🎉",
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
+        form.reset();
+        router.refresh();
       } catch (error) {
-        console.error(error)
-        setError("エラーが発生しました")
+        console.error(error);
+        setError("エラーが発生しました");
       }
-    })
-  }
+    });
+  };
 
   return (
-    <div className="max-w-lg mx-auto p-8 bg-white rounded-lg shadow-md">
-      <h2 className="font-bold text-2xl text-center mb-8">パスワード変更</h2>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-lg"
+    >
+      <h2 className="text-3xl font-bold text-center mb-8 text-gradient">
+        パスワード変更
+      </h2>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -66,7 +87,9 @@ const Password = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-semibold">新しいパスワード</FormLabel>
+                <FormLabel className="text-lg font-semibold">
+                  新しいパスワード
+                </FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -74,17 +97,22 @@ const Password = () => {
                       placeholder="********"
                       {...field}
                       disabled={isPending}
-                      className="border rounded-lg p-3"
+                      className="pr-10 border-2 border-gray-300 focus:border-blue-500 transition-all duration-300"
                     />
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center p-3 cursor-pointer"
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 transition-colors duration-200"
                       onClick={() => setPasswordVisibility1(!passwordVisibility1)}
                     >
-                      {passwordVisibility1 ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-                    </div>
+                      {passwordVisibility1 ? (
+                        <EyeOffIcon className="w-5 h-5" />
+                      ) : (
+                        <EyeIcon className="w-5 h-5" />
+                      )}
+                    </button>
                   </div>
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-red-500" />
               </FormItem>
             )}
           />
@@ -94,7 +122,9 @@ const Password = () => {
             name="confirmation"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-semibold">確認用パスワード</FormLabel>
+                <FormLabel className="text-lg font-semibold">
+                  パスワードの確認
+                </FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -102,36 +132,58 @@ const Password = () => {
                       placeholder="********"
                       {...field}
                       disabled={isPending}
-                      className="border rounded-lg p-3"
+                      className="pr-10 border-2 border-gray-300 focus:border-blue-500 transition-all duration-300"
                     />
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center p-3 cursor-pointer"
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 transition-colors duration-200"
                       onClick={() => setPasswordVisibility2(!passwordVisibility2)}
                     >
-                      {passwordVisibility2 ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-                    </div>
+                      {passwordVisibility2 ? (
+                        <EyeOffIcon className="w-5 h-5" />
+                      ) : (
+                        <EyeIcon className="w-5 h-5" />
+                      )}
+                    </button>
                   </div>
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-red-500" />
               </FormItem>
             )}
           />
 
-          <div className="space-y-4">
-            <FormError message={error} />
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-red-500 text-center"
+            >
+              {error}
+            </motion.p>
+          )}
+
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             <Button
               type="submit"
-              className="w-full py-3 rounded-lg font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300"
+              className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
               disabled={isPending}
             >
-              {isPending && <Loader2 className="animate-spin mr-2" />}
-              変更
+              {isPending ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : isSuccess ? (
+                <CheckCircle className="w-5 h-5" />
+              ) : (
+                "パスワードを変更"
+              )}
             </Button>
-          </div>
+          </motion.div>
         </form>
       </Form>
-    </div>
-  )
-}
+    </motion.div>
+  );
+};
 
-export default Password
+export default Password;

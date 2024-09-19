@@ -1,53 +1,66 @@
 "use client"
 
-import { BlogType } from "@/types"
-import { format } from "date-fns"
-import Image from "next/image"
-import Link from "next/link"
+import React from 'react';
+import { BlogType } from "@/types";
+import { format } from "date-fns";
+import Image from "next/image";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { CalendarDays, User, ArrowRight } from "lucide-react";
 
 interface BlogItemProps {
   blog: BlogType & {
     profiles: {
-      name: string
-      avatar_url: string
-    }
-  }
+      name: string;
+      avatar_url: string;
+    };
+  };
 }
 
-const BlogItem = ({ blog }: BlogItemProps) => {
+const BlogItem: React.FC<BlogItemProps> = ({ blog }) => {
   return (
-    <div className="break-words border rounded">
-      <Link href={`blog/${blog.id}`}>
-        <div className="aspect-video relative overflow-hidden">
+    <motion.div
+      className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl"
+      whileHover={{ scale: 1.02 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Link href={`blog/${blog.id}`} className="block">
+        <div className="relative aspect-video overflow-hidden">
           <Image
             src={blog.image_url || "/noImage.png"}
-            className="rounded-t object-cover transition-transform duration-100 ease-in-out hover:scale-105"
+            className="rounded-t object-cover transition-transform duration-300 ease-in-out hover:scale-105"
             alt="image"
             width={640}
             height={360}
             priority
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute bottom-4 left-4 right-4 text-white">
+            <h2 className="text-xl font-bold mb-2 line-clamp-2">{blog.title}</h2>
+            <div className="flex items-center space-x-4 text-sm">
+              <div className="flex items-center space-x-1">
+                <CalendarDays className="w-4 h-4" />
+                <span>{format(new Date(blog.updated_at), "MMM d, yyyy")}</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <User className="w-4 h-4" />
+                <span>{blog.profiles.name}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </Link>
-
-      <div className="p-3 space-y-2">
-        <div className="text-gray-500 text-xs">
-          {format(new Date(blog.updated_at), "yyyy/MM/dd HH:mm")}
-        </div>
-        <div className="font-bold">{blog.title}</div>
-        <div className="flex items-center space-x-3">
-          <Image
-            src={blog.profiles.avatar_url || "/default.png"}
-            className="rounded-full"
-            alt="avatar"
-            width={30}
-            height={30}
-          />
-          <div className="text-sm">{blog.profiles.name}</div>
-        </div>
+      <div className="p-4">
+        <p className="text-gray-600 mb-4 line-clamp-3">{blog.content}</p>
+        <Link href={`blog/${blog.id}`} className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200">
+          Read more
+          <ArrowRight className="w-4 h-4 ml-1" />
+        </Link>
       </div>
-    </div>
-  )
-}
+    </motion.div>
+  );
+};
 
-export default BlogItem
+export default BlogItem;
