@@ -221,19 +221,13 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
                   <Info className="mr-2" />
                   テキスト装飾ガイド
                 </h3>
-                <ul className="list-disc list-inside space-y-2">
-                  <li><code>```code```</code> - コードブロック（コピー可能）</li>
-                  <li><code>**text**</code> - 太字</li>
-                  <li><code>__text__</code> - 下線</li>
-                  <li><code>==text==</code> - ハイライト</li>
-                  <li><code>[リンクテキスト](URL)</code> - ハイパーリンク</li>
-                  <li><code>~~text~~</code> - 取り消し線</li>
-                  <li><code>*text*</code> または <code>_text_</code> - イタリック体</li>
-                  <li><code>^text^</code> - 上付き文字</li>
-                  <li><code>{{text}}</code> - グレーの背景</li>
-                  <li><code>@[text]</code> - タグスタイル</li>
-                  <li><code>{'{color:カラーコード}テキスト{/color}'}</code> - カスタム色のテキスト（例: {'{color:#ff0000}赤いテキスト{/color}'}）</li>
-                </ul>
+                  <ul className="list-disc list-inside space-y-2">
+                    <li><code>```code```</code> - コードブロック（コピー可能）</li>
+                    <li><code>**text**</code> - 太字</li>
+                    <li><code>__text__</code> - 下線</li>
+                    <li><code>==text==</code> - ハイライト</li>
+                    <li><code>[リンクテキスト](URL)</code> - ハイパーリンク</li>
+                  </ul>
               </div>
             </div>
           </form>
