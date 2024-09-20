@@ -12,8 +12,8 @@ const mPlus1 = M_PLUS_1({
 
 export const metadata: Metadata = {
   title: {
-    template: "Void Puluse",
-    default: "Void Puluse",
+    template: "Void Pulse",
+    default: "Void Pulse",
   },
 }
 
