@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, User, ArrowRight } from "lucide-react";
+import { motion } from 'framer-motion';
 
 interface BlogItemProps {
   blog: BlogType & {
@@ -18,18 +19,18 @@ interface BlogItemProps {
 
 const BlogItem: React.FC<BlogItemProps> = ({ blog }) => {
   return (
-    <div
-      className="relative bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-105 hover:shadow-xl cursor-pointer"
-      style={{ willChange: "transform, box-shadow" }}  // GPUアクセラレーションを有効化
+    <motion.div
+      className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl"
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.98 }}
     >
       <Link href={`blog/${blog.id}`} className="block">
         <div className="relative aspect-video overflow-hidden">
           <Image
             src={blog.image_url || "/noImage.png"}
-            className="rounded-t object-cover transition-transform duration-300 ease-in-out hover:scale-105"
+            className="object-cover transition-transform duration-300 ease-in-out hover:scale-105"
             alt="image"
-            width={640}
-            height={360}
+            layout="fill"
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -59,7 +60,7 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog }) => {
           <ArrowRight className="w-4 h-4 ml-1" />
         </Link>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
