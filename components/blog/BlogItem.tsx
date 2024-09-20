@@ -8,14 +8,7 @@ import Link from "next/link";
 import { CalendarDays, User, ArrowRight, Search } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface BlogItemProps {
   blogs: (BlogType & {
@@ -29,11 +22,7 @@ interface BlogItemProps {
 const BlogItem: React.FC<BlogItemProps> = ({ blogs }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredBlogs, setFilteredBlogs] = useState(blogs);
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'latest' | 'oldest'>('latest');
-
-  // Extract unique users from blogs
-  const users = Array.from(new Set(blogs.map(blog => blog.profiles.name)));
 
   useEffect(() => {
     let results = blogs;
@@ -46,11 +35,6 @@ const BlogItem: React.FC<BlogItemProps> = ({ blogs }) => {
       );
     }
 
-    // Filter by selected user
-    if (selectedUser) {
-      results = results.filter(blog => blog.profiles.name === selectedUser);
-    }
-
     // Sort blogs
     results.sort((a, b) => {
       const dateA = new Date(a.updated_at).getTime();
@@ -59,7 +43,11 @@ const BlogItem: React.FC<BlogItemProps> = ({ blogs }) => {
     });
 
     setFilteredBlogs(results);
-  }, [searchTerm, selectedUser, sortOrder, blogs]);
+  }, [searchTerm, sortOrder, blogs]);
+
+  const toggleSortOrder = () => {
+    setSortOrder(prevOrder => prevOrder === 'latest' ? 'oldest' : 'latest');
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -74,33 +62,10 @@ const BlogItem: React.FC<BlogItemProps> = ({ blogs }) => {
             className="flex-grow"
           />
         </div>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
-          <div className="w-full md:w-1/2">
-            <Label htmlFor="user-filter" className="mb-2 block">ユーザーでフィルター</Label>
-            <Select onValueChange={(value) => setSelectedUser(value || null)}>
-              <SelectTrigger id="user-filter">
-                <SelectValue placeholder="すべてのユーザー" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">すべてのユーザー</SelectItem>
-                {users.map(user => (
-                  <SelectItem key={user} value={user}>{user}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-full md:w-1/2">
-            <Label htmlFor="sort-order" className="mb-2 block">並び替え</Label>
-            <Select onValueChange={(value) => setSortOrder(value as 'latest' | 'oldest')}>
-              <SelectTrigger id="sort-order">
-                <SelectValue placeholder="並び替え" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="latest">最新順</SelectItem>
-                <SelectItem value="oldest">古い順</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex justify-end">
+          <Button onClick={toggleSortOrder} variant="outline">
+            {sortOrder === 'latest' ? '最新順' : '古い順'}
+          </Button>
         </div>
       </div>
       <AnimatePresence>
