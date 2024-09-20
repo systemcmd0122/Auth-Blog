@@ -1,10 +1,8 @@
-"use client"
-
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BlogType } from "@/types";
 import { format } from "date-fns";
-import { FilePenLine, Loader2, Trash2, Calendar, User, Bookmark, BookmarkCheck, Info } from "lucide-react"; // Info icon imported here
+import { FilePenLine, Loader2, Trash2, Calendar, User, Bookmark, BookmarkCheck, Info, Copy, Check } from "lucide-react";
 import { deleteBlog } from "@/actions/blog";
 import FormError from "@/components/auth/FormError";
 import Image from "next/image";
@@ -28,6 +26,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog }) => {
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const handleDelete = async () => {
     if (!window.confirm("本当に削除しますか？")) {
@@ -69,27 +68,40 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog }) => {
     // ここで実際のブックマーク処理を実装する（例：APIリクエストなど）
   };
 
+  const copyToClipboard = (text: string, index: number) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    });
+  };
+
   const renderFormattedContent = (content: string) => {
     const parts = content.split(/(\`\`\`.*?\`\`\`|\*\*.*?\*\*|__.*?__|==.*?==|\[.*?\]\(.*?\))/);
     return parts.map((part, index) => {
       if (part.startsWith('```') && part.endsWith('```')) {
         const code = part.slice(3, -3);
         return (
-          <div key={index} className="relative bg-gray-100 p-4 rounded-md my-2 overflow-x-auto">
-            <pre className="whitespace-pre-wrap break-words">{code}</pre>
+          <div key={index} className="relative bg-gray-800 text-white p-4 rounded-md my-4 overflow-x-auto">
+            <pre className="whitespace-pre-wrap break-words text-sm">{code}</pre>
+            <button
+              onClick={() => copyToClipboard(code, index)}
+              className="absolute top-2 right-2 p-2 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              {copiedIndex === index ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+            </button>
           </div>
         );
       } else if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={index} className="break-words">{part.slice(2, -2)}</strong>;
+        return <strong key={index} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>;
       } else if (part.startsWith('__') && part.endsWith('__')) {
-        return <u key={index} className="break-words">{part.slice(2, -2)}</u>;
+        return <span key={index} className="border-b-2 border-gray-500">{part.slice(2, -2)}</span>;
       } else if (part.startsWith('==') && part.endsWith('==')) {
-        return <mark key={index} className="break-words">{part.slice(2, -2)}</mark>;
+        return <mark key={index} className="bg-yellow-200 px-1 rounded">{part.slice(2, -2)}</mark>;
       } else if (part.match(/\[.*?\]\(.*?\)/)) {
         const [text, url] = part.slice(1, -1).split("](");
-        return <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-words">{text}</a>;
+        return <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">{text}</a>;
       }
-      return <span key={index} className="break-words">{part}</span>;
+      return <span key={index}>{part}</span>;
     });
   };
 
@@ -196,16 +208,16 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog }) => {
       </div>
 
       <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-        <h3 className="text-xl font-bold mb-4 flex items-center">
-          <Info className="mr-2" />
+        <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+          <Info className="mr-2 text-blue-500" />
           テキスト装飾ガイド
         </h3>
-        <ul className="list-disc list-inside space-y-2">
-          <li><code>```code```</code> - コードブロック（コピー可能）</li>
-          <li><code>**text**</code> - 太字</li>
-          <li><code>__text__</code> - 下線</li>
-          <li><code>==text==</code> - ハイライト</li>
-          <li><code>[リンクテキスト](URL)</code> - ハイパーリンク</li>
+        <ul className="space-y-2 text-gray-700">
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">```code```</code> コードブロック（コピー可能）</li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">**text**</code> <strong className="font-bold">太字</strong></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">__text__</code> <span className="border-b-2 border-gray-500">下線</span></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">==text==</code> <mark className="bg-yellow-200 px-1 rounded">ハイライト</mark></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">[リンク](URL)</code> <a href="#" className="text-blue-600 hover:text-blue-800 underline">ハイパーリンク</a></li>
         </ul>
       </div>
     </motion.div>
