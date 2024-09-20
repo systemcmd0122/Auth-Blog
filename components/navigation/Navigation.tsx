@@ -45,7 +45,7 @@ const Navigation = ({ user }: NavigationProps) => {
           whileHover={{ scale: 1.1 }}  // ロゴがホバー時に少し拡大
         >
           <Link href="/" className="text-2xl font-extrabold text-indigo-600 hover:text-indigo-500 transition duration-300">
-            TechNova
+            Void Pulse
           </Link>
         </motion.div>
 
