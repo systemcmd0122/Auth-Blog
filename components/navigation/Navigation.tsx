@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useState, useEffect } from "react"
-import { LogOut, Home } from "lucide-react"
+import { LogOut, Home, Users } from "lucide-react"
 
 interface NavigationProps {
   user: User | null
@@ -16,7 +16,7 @@ const Navigation = ({ user }: NavigationProps) => {
   const router = useRouter()
   const supabase = createClient()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [currentTime, setCurrentTime] = useState<string>("")
+  const [userCount, setUserCount] = useState<number>(0)
 
   const handleLogout = async () => {
     if (!window.confirm("ログアウトしますが、よろしいですか？")) {
@@ -28,22 +28,27 @@ const Navigation = ({ user }: NavigationProps) => {
     router.refresh()
   }
 
-  const updateTime = () => {
-    const date = new Date()
-    const options: Intl.DateTimeFormatOptions = {
-      timeZone: "Asia/Tokyo",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    }
-    setCurrentTime(date.toLocaleTimeString("ja-JP", options))
-  }
-
   useEffect(() => {
-    updateTime()
-    const intervalId = setInterval(updateTime, 1000)
-    return () => clearInterval(intervalId)
+    const fetchUserCount = async () => {
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+      
+      setUserCount(count || 0)
+    }
+
+    fetchUserCount()
+
+    const subscription = supabase
+      .channel('profiles')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+        fetchUserCount()
+      })
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   return (
@@ -53,14 +58,15 @@ const Navigation = ({ user }: NavigationProps) => {
           Void Pulse
         </Link>
 
-        {/* Centered Time Display */}
+        {/* Centered User Count Display */}
         <motion.div
-          className="text-lg font-medium text-gray-700"
+          className="text-lg font-medium text-gray-700 flex items-center"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {currentTime}
+          <Users className="h-5 w-5 mr-2" />
+          {userCount} ユーザー
         </motion.div>
 
         <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">

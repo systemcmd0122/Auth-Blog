@@ -78,7 +78,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog }) => {
   };
 
   const renderFormattedContent = (content: string) => {
-    const parts = content.split(/(\`\`\`.*?\`\`\`|\*\*.*?\*\*|__.*?__|==.*?==|\[.*?\]\(.*?\))/);
+    const parts = content.split(/(\`\`\`.*?\`\`\`|\*\*.*?\*\*|__.*?__|==.*?==|\[.*?\]\(.*?\)|<color:#[0-9A-Fa-f]{6}>.*?<\/color>|<size:.*?>.*?<\/size>|~~.*?~~)/s);
     return parts.map((part, index) => {
       if (part.startsWith('```') && part.endsWith('```')) {
         const code = part.slice(3, -3);
@@ -102,6 +102,14 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog }) => {
       } else if (part.match(/\[.*?\]\(.*?\)/)) {
         const [text, url] = part.slice(1, -1).split("](");
         return <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">{text}</a>;
+      } else if (part.startsWith('<color:#') && part.endsWith('</color>')) {
+        const [color, text] = part.slice(7, -8).split('>');
+        return <span key={index} style={{ color }}>{text}</span>;
+      } else if (part.startsWith('<size:') && part.endsWith('</size>')) {
+        const [size, text] = part.slice(6, -7).split('>');
+        return <span key={index} style={{ fontSize: size }}>{text}</span>;
+      } else if (part.startsWith('~~') && part.endsWith('~~')) {
+        return <del key={index} className="line-through">{part.slice(2, -2)}</del>;
       }
       return <span key={index}>{part}</span>;
     });
@@ -220,7 +228,21 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog }) => {
           <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">__text__</code> <span className="border-b-2 border-gray-500">下線</span></li>
           <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">==text==</code> <mark className="bg-yellow-200 px-1 rounded">ハイライト</mark></li>
           <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">[リンク](URL)</code> <a href="#" className="text-blue-600 hover:text-blue-800 underline">ハイパーリンク</a></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;color:#FF0000&gt;text&lt;/color&gt;</code> <span style={{ color: '#FF0000' }}>色付きテキスト</span></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;size:20px&gt;text&lt;/size&gt;</code> <span style={{ fontSize: '20px' }}>サイズ変更</span></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">~~text~~</code> <del className="line-through">取り消し線</del></li>
         </ul>
+        <div className="mt-4">
+          <h4 className="font-semibold mb-2">カラーコード例：</h4>
+          <div className="flex flex-wrap gap-2">
+            {['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'].map((color) => (
+              <div key={color} className="flex items-center">
+                <div className="w-6 h-6 rounded mr-1" style={{ backgroundColor: color }}></div>
+                <code className="text-sm">{color}</code>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </motion.div>
   );
