@@ -6,6 +6,8 @@ export interface ProfileType {
 }
 
 export interface BlogType {
+  view_count: ReactNode
+  profiles: any
   id: string
   title: string
   content: string
