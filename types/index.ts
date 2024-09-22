@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 export interface ProfileType {
   id: string
   name: string
@@ -7,7 +9,7 @@ export interface ProfileType {
 
 export interface BlogType {
   view_count: ReactNode
-  profiles: any
+  profiles: ProfileType
   id: string
   title: string
   content: string
