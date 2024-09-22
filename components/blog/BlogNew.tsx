@@ -4,7 +4,7 @@ import React, { useState, useTransition } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Info } from "lucide-react"; // Info icon imported here
+import { Info } from "lucide-react";
 
 import {
   Form,
@@ -203,34 +203,35 @@ const BlogNew: React.FC<BlogNewProps> = ({ userId }) => {
                 ) : null}
                 <span>投稿する</span>
               </Button>
-            <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
-                <Info className="mr-2 text-blue-500" />
-                テキスト装飾ガイド
-              </h3>
-              <ul className="space-y-2 text-gray-700">
-                <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">```code```</code> コードブロック（コピー可能）</li>
-                <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">**text**</code> <strong className="font-bold">太字</strong></li>
-                <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">__text__</code> <span className="border-b-2 border-gray-500">下線</span></li>
-                <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">==text==</code> <mark className="bg-yellow-200 px-1 rounded">ハイライト</mark></li>
-                <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">[リンク](URL)</code> <a href="#" className="text-blue-600 hover:text-blue-800 underline">ハイパーリンク</a></li>
-                <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;color:#FF0000&gt;text&lt;/color&gt;</code> <span style={{ color: '#FF0000' }}>色付きテキスト</span></li>
-                <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;size:20px&gt;text&lt;/size&gt;</code> <span style={{ fontSize: '20px' }}>サイズ変更</span></li>
-                <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">~~text~~</code> <del className="line-through">取り消し線</del></li>
-              </ul>
-              <div className="mt-4">
-                <h4 className="font-semibold mb-2">カラーコード例：</h4>
-                <div className="flex flex-wrap gap-2">
-                  {['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'].map((color) => (
-                    <div key={color} className="flex items-center">
-                      <div className="w-6 h-6 rounded mr-1" style={{ backgroundColor: color }}></div>
-                      <code className="text-sm">{color}</code>
-                    </div>
-                  ))}
+
+              <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+                <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+                  <Info className="mr-2 text-blue-500" />
+                  テキスト装飾ガイド
+                </h3>
+                <ul className="space-y-2 text-gray-700">
+                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">```code```</code> コードブロック（コピー可能）</li>
+                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">**text**</code> <strong className="font-bold">太字</strong></li>
+                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">__text__</code> <span className="border-b-2 border-gray-500">下線</span></li>
+                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">==text==</code> <mark className="bg-yellow-200 px-1 rounded">ハイライト</mark></li>
+                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">[リンク](URL)</code> <a href="#" className="text-blue-600 hover:text-blue-800 underline">ハイパーリンク</a></li>
+                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;color:#FF0000&gt;text&lt;/color&gt;</code> <span style={{ color: '#FF0000' }}>色付きテキスト</span></li>
+                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;size:20px&gt;text&lt;/size&gt;</code> <span style={{ fontSize: '20px' }}>サイズ変更</span></li>
+                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">~~text~~</code> <del className="line-through">取り消し線</del></li>
+                </ul>
+                <div className="mt-4">
+                  <h4 className="font-semibold mb-2">カラーコード例：</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'].map((color) => (
+                      <div key={color} className="flex items-center">
+                        <div className="w-6 h-6 rounded mr-1" style={{ backgroundColor: color }}></div>
+                        <code className="text-sm">{color}</code>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           </form>
         </Form>
       </div>
