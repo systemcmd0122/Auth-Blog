@@ -78,7 +78,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog }) => {
   };
 
   const renderFormattedContent = (content: string) => {
-    const parts = content.split(/(\`\`\`.*?\`\`\`|\*\*.*?\*\*|__.*?__|==.*?==|\[.*?\]\(.*?\)|<color:#[0-9A-Fa-f]{6}>.*?<\/color>|<size:.*?>.*?<\/size>|~~.*?~~)/s);
+    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~)/);
     return parts.map((part, index) => {
       if (part.startsWith('```') && part.endsWith('```')) {
         const code = part.slice(3, -3);
@@ -99,7 +99,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog }) => {
         return <span key={index} className="border-b-2 border-gray-500">{part.slice(2, -2)}</span>;
       } else if (part.startsWith('==') && part.endsWith('==')) {
         return <mark key={index} className="bg-yellow-200 px-1 rounded">{part.slice(2, -2)}</mark>;
-      } else if (part.match(/\[.*?\]\(.*?\)/)) {
+      } else if (part.match(/\[[\s\S]*?\]\([\s\S]*?\)/)) {
         const [text, url] = part.slice(1, -1).split("](");
         return <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">{text}</a>;
       } else if (part.startsWith('<color:#') && part.endsWith('</color>')) {
