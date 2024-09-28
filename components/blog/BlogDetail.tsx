@@ -3,14 +3,16 @@
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BlogType } from "@/types";
+import { User } from "@supabase/auth-helpers-nextjs";
 import { format } from "date-fns";
-import { FilePenLine, Loader2, Trash2, Calendar, User, Bookmark, BookmarkCheck, Info, Copy, Check } from "lucide-react";
+import { FilePenLine, Loader2, Trash2, Calendar, UserIcon, Bookmark, BookmarkCheck, Info, Copy, Check } from "lucide-react";
 import { deleteBlog } from "@/actions/blog";
 import FormError from "@/components/auth/FormError";
 import Image from "next/image";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
+import Comments from "@/components/blog/Comments";
 
 interface BlogDetailProps {
   blog: BlogType & {
@@ -21,9 +23,10 @@ interface BlogDetailProps {
     };
   };
   isMyBlog: boolean;
+  currentUser: User | null;
 }
 
-const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog }) => {
+const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog, currentUser }) => {
   const router = useRouter();
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -140,7 +143,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog }) => {
                 <span>{format(new Date(blog.updated_at), "yyyy/MM/dd HH:mm")}</span>
               </div>
               <div className="flex items-center space-x-1">
-                <User className="w-4 h-4" />
+                <UserIcon className="w-4 h-4" />
                 <span>{blog.profiles.name}</span>
               </div>
             </div>
@@ -244,6 +247,8 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog }) => {
           </div>
         </div>
       </div>
+
+      <Comments blogId={blog.id} currentUser={currentUser} />
     </motion.div>
   );
 };

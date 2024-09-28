@@ -109,7 +109,7 @@ const Email = ({ email }: EmailProps) => {
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="example@fullstackchannel.com"
+                    placeholder="example@example.com"
                     {...field}
                     disabled={isPending}
                     className="border-2 border-gray-300 focus:border-blue-500 transition-all duration-300"

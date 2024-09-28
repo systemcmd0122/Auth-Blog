@@ -41,7 +41,7 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
 
   return (
     <Suspense fallback={<Loading />}>
-      <BlogDetail blog={blogData} isMyBlog={isMyBlog} />
+      <BlogDetail blog={blogData} isMyBlog={isMyBlog} currentUser={user} />
     </Suspense>
   )
 }
