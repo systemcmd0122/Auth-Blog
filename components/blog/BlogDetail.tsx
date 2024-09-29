@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BlogType } from "@/types";
 import { User } from "@supabase/auth-helpers-nextjs";
 import { format } from "date-fns";
-import { FilePenLine, Loader2, Trash2, Calendar, UserIcon, Bookmark, BookmarkCheck, Heart, Info, Copy, Check } from "lucide-react";
+import { FilePenLine, Loader2, Trash2, Calendar, UserIcon, Bookmark, BookmarkCheck, Info, Copy, Check } from "lucide-react";
 import { deleteBlog } from "@/actions/blog";
 import FormError from "@/components/auth/FormError";
 import Image from "next/image";
@@ -13,7 +13,6 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import Comments from "@/components/blog/Comments";
-import { createClient } from "@/utils/supabase/client";
 
 interface BlogDetailProps {
   blog: BlogType & {
@@ -32,99 +31,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog, currentUser }) 
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [likesCount, setLikesCount] = useState(blog.likes_count || 0);
-  const [isLiked, setIsLiked] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-
-  const supabase = createClient();
-
-  useEffect(() => {
-    if (currentUser) {
-      checkBookmarkStatus();
-      checkLikeStatus();
-    }
-  }, [currentUser, blog.id]);
-
-  const checkBookmarkStatus = async () => {
-    const { data, error } = await supabase
-      .from('bookmarks')
-      .select('id')
-      .eq('user_id', currentUser?.id)
-      .eq('blog_id', blog.id)
-      .single();
-
-    if (error) {
-      console.error('Error checking bookmark status:', error);
-    } else {
-      setIsBookmarked(!!data);
-    }
-  };
-
-  const checkLikeStatus = async () => {
-    const { data, error } = await supabase
-      .from('likes')
-      .select('id')
-      .eq('user_id', currentUser?.id)
-      .eq('blog_id', blog.id)
-      .single();
-
-    if (error) {
-      console.error('Error checking like status:', error);
-    } else {
-      setIsLiked(!!data);
-    }
-  };
-
-  const toggleBookmark = async () => {
-    if (!currentUser) {
-      toast.error('ログインしてください');
-      return;
-    }
-
-    const { data, error } = isBookmarked
-      ? await supabase
-          .from('bookmarks')
-          .delete()
-          .eq('user_id', currentUser.id)
-          .eq('blog_id', blog.id)
-      : await supabase
-          .from('bookmarks')
-          .insert({ user_id: currentUser.id, blog_id: blog.id });
-
-    if (error) {
-      console.error('Error toggling bookmark:', error);
-      toast.error('エラーが発生しました');
-    } else {
-      setIsBookmarked(!isBookmarked);
-      toast.success(isBookmarked ? 'ブックマークを解除しました' : 'ブログをブックマークしました');
-    }
-  };
-
-  const toggleLike = async () => {
-    if (!currentUser) {
-      toast.error('ログインしてください');
-      return;
-    }
-
-    const { data, error } = isLiked
-      ? await supabase
-          .from('likes')
-          .delete()
-          .eq('user_id', currentUser.id)
-          .eq('blog_id', blog.id)
-      : await supabase
-          .from('likes')
-          .insert({ user_id: currentUser.id, blog_id: blog.id });
-
-    if (error) {
-      console.error('Error toggling like:', error);
-      toast.error('エラーが発生しました');
-    } else {
-      setIsLiked(!isLiked);
-      setLikesCount(prevCount => isLiked ? prevCount - 1 : prevCount + 1);
-      toast.success(isLiked ? 'いいねを解除しました' : 'いいねしました');
-    }
-  };
 
   const handleDelete = async () => {
     if (!window.confirm("本当に削除しますか？")) {
@@ -154,6 +61,16 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog, currentUser }) 
         setError("エラーが発生しました");
       }
     });
+  };
+
+  const toggleBookmark = () => {
+    setIsBookmarked(!isBookmarked);
+    if (!isBookmarked) {
+      toast.success("ブログをブックマークしました");
+    } else {
+      toast.success("ブックマークを解除しました");
+    }
+    // ここで実際のブックマーク処理を実装する（例：APIリクエストなど）
   };
 
   const copyToClipboard = (text: string, index: number) => {
@@ -268,30 +185,19 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog, currentUser }) 
                 </>
               )}
             </div>
-            <div className="flex items-center space-x-3">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`${isLiked ? 'bg-red-500' : 'bg-gray-500'} text-white px-4 py-2 rounded-full flex items-center space-x-2`}
-                onClick={toggleLike}
-              >
-                <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-                <span>{likesCount}</span>
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`${isBookmarked ? 'bg-yellow-500' : 'bg-gray-500'} text-white px-4 py-2 rounded-full flex items-center space-x-2`}
-                onClick={toggleBookmark}
-              >
-                {isBookmarked ? (
-                  <BookmarkCheck className="w-4 h-4" />
-                ) : (
-                  <Bookmark className="w-4 h-4" />
-                )}
-                <span>{isBookmarked ? 'ブックマーク済み' : 'ブックマーク'}</span>
-              </motion.button>
-            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`${isBookmarked ? 'bg-yellow-500' : 'bg-gray-500'} text-white px-4 py-2 rounded-full flex items-center space-x-2`}
+              onClick={toggleBookmark}
+            >
+              {isBookmarked ? (
+                <BookmarkCheck className="w-4 h-4" />
+              ) : (
+                <Bookmark className="w-4 h-4" />
+              )}
+              <span>{isBookmarked ? 'ブックマーク済み' : 'ブックマーク'}</span>
+            </motion.button>
           </div>
 
           <FormError message={error} />
