@@ -114,6 +114,16 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
     await fetchComments();
   };
 
+  // 改行を<br>タグに変換する関数
+  const formatComment = (content: string) => {
+    return content.split('\n').map((line, index) => (
+      <React.Fragment key={index}>
+        {line}
+        {index !== content.split('\n').length - 1 && <br />}
+      </React.Fragment>
+    ));
+  };
+
   return (
     <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
       <h3 className="text-2xl font-bold mb-4">コメント</h3>
@@ -122,7 +132,7 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           placeholder="コメントを入力してください..."
-          className="w-full p-2 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-2 border rounded-md resize-vertical focus:outline-none focus:ring-2 focus:ring-blue-500"
           rows={3}
         />
         <button
@@ -150,7 +160,7 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
                 {format(new Date(comment.created_at), 'yyyy/MM/dd HH:mm')}
               </span>
             </div>
-            <p className="text-gray-700">{comment.content}</p>
+            <p className="text-gray-700 whitespace-pre-wrap">{formatComment(comment.content)}</p>
             {currentUser && currentUser.id === comment.user_id && (
               <button
                 onClick={() => handleDeleteComment(comment.id)}
