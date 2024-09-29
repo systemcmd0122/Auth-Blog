@@ -5,15 +5,14 @@ import { BlogType } from "@/types";
 import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, User, Bookmark, Heart } from "lucide-react";
+import { CalendarDays, User } from "lucide-react";
 
 interface BlogItemProps {
   blog: BlogType;
   searchQuery?: string;
-  isBookmarked?: boolean;
 }
 
-const BlogItem: React.FC<BlogItemProps> = ({ blog, searchQuery, isBookmarked }) => {
+const BlogItem: React.FC<BlogItemProps> = ({ blog, searchQuery }) => {
   const highlightTitle = (title: string, query: string) => {
     if (!query) return title;
     const parts = title.split(new RegExp(`(${query})`, 'gi'));
@@ -24,7 +23,7 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog, searchQuery, isBookmarked }) 
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-105 hover:shadow-xl ${isBookmarked ? 'border-2 border-yellow-500' : ''}`}>
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-105 hover:shadow-xl">
       <Link href={`blog/${blog.id}`} className="block">
         <div className="relative aspect-video">
           <Image
@@ -48,18 +47,8 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog, searchQuery, isBookmarked }) 
                 <User className="w-4 h-4" />
                 <span>{blog.profiles.name}</span>
               </div>
-              <div className="flex items-center space-x-1">
-                <Heart className="w-4 h-4" />
-                <span>{blog.likes_count || 0}</span>
-              </div>
             </div>
           </div>
-          {isBookmarked && (
-            <div className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full flex items-center space-x-1">
-              <Bookmark className="w-4 h-4" />
-              <span className="text-xs">ブックマーク済み</span>
-            </div>
-          )}
         </div>
       </Link>
     </div>
