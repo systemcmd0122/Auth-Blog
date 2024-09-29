@@ -11,11 +11,8 @@ interface CommentType {
   id: string;
   content: string;
   user_id: string;
+  profile_id: string;
   created_at: string;
-  user: {
-    id: string;
-    email: string;
-  };
   profiles: {
     id: string;
     name: string;
@@ -53,11 +50,7 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
       .from('comments')
       .select(`
         *,
-        user:user_id (
-          id,
-          email
-        ),
-        profiles:user_id (
+        profiles:profile_id (
           id,
           name,
           avatar_url
@@ -87,6 +80,7 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
     const { error } = await supabase.from('comments').insert({
       blog_id: blogId,
       user_id: currentUser.id,
+      profile_id: currentUser.id,
       content: newComment.trim(),
     });
 
