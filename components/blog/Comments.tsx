@@ -12,7 +12,12 @@ interface CommentType {
   content: string;
   user_id: string;
   created_at: string;
+  user: {
+    id: string;
+    email: string;
+  };
   profiles: {
+    id: string;
     name: string;
     avatar_url: string | null;
   };
@@ -48,7 +53,12 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
       .from('comments')
       .select(`
         *,
-        profiles (
+        user:user_id (
+          id,
+          email
+        ),
+        profiles:user_id (
+          id,
           name,
           avatar_url
         )
@@ -89,7 +99,7 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
 
     setNewComment('');
     toast.success('コメントを投稿しました。');
-    await fetchComments(); // Fetch comments immediately after posting
+    await fetchComments();
   };
 
   const handleDeleteComment = async (commentId: string) => {
@@ -107,7 +117,7 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
     }
 
     toast.success('コメントを削除しました。');
-    await fetchComments(); // Fetch comments immediately after deleting
+    await fetchComments();
   };
 
   return (
