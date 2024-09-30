@@ -1,10 +1,18 @@
 "use client"
 
-import React, { useState, useTransition } from "react";
+"use client"
+
+import React, { useState, useTransition, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Info } from "lucide-react";
+import { Info, Loader2, Upload, Copy, Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import ImageUploading, { ImageListType } from "react-images-uploading";
+import toast from "react-hot-toast";
+import Image from "next/image";
+import { motion } from "framer-motion";
+
 import {
   Form,
   FormControl,
@@ -16,16 +24,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Upload } from "lucide-react";
 import { BlogSchema } from "@/schemas";
 import { editBlog } from "@/actions/blog";
-import { useRouter } from "next/navigation";
 import { BlogType } from "@/types";
-import ImageUploading, { ImageListType } from "react-images-uploading";
-import toast from "react-hot-toast";
-import Image from "next/image";
-import FormError from "@/components/auth/FormError";
-import { motion } from "framer-motion";
 
 interface BlogEditProps {
   blog: BlogType;
@@ -40,6 +41,8 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
       dataURL: blog.image_url || "/noImage.png",
     },
   ]);
+  const [previewContent, setPreviewContent] = useState(blog.content);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const form = useForm<z.infer<typeof BlogSchema>>({
     resolver: zodResolver(BlogSchema),
@@ -60,11 +63,7 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
           imageUpload[0].dataURL &&
           imageUpload[0].dataURL.startsWith("data:image")
         ) {
-          const image = imageUpload[0];
-
-          if (image.dataURL) {
-            base64Image = image.dataURL;
-          }
+          base64Image = imageUpload[0].dataURL;
         }
 
         const res = await editBlog({
@@ -102,16 +101,72 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
     setImageUpload(imageList);
   };
 
+  const copyToClipboard = (text: string, index: number) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    });
+  };
+
+  const renderFormattedContent = (content: string) => {
+    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~|\n)/);
+    return parts.map((part, index) => {
+      if (part === '\n') {
+        return <br key={index} />;
+      } else if (part.startsWith('```') && part.endsWith('```')) {
+        const code = part.slice(3, -3);
+        return (
+          <div key={index} className="relative bg-gray-800 text-white p-4 rounded-md my-4 overflow-x-auto">
+            <pre className="whitespace-pre-wrap break-words text-sm">{code}</pre>
+            <button
+              onClick={() => copyToClipboard(code, index)}
+              className="absolute top-2 right-2 p-2 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              {copiedIndex === index ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+            </button>
+          </div>
+        );
+      } else if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={index} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>;
+      } else if (part.startsWith('__') && part.endsWith('__')) {
+        return <span key={index} className="border-b-2 border-gray-500">{part.slice(2, -2)}</span>;
+      } else if (part.startsWith('==') && part.endsWith('==')) {
+        return <mark key={index} className="bg-yellow-200 px-1 rounded">{part.slice(2, -2)}</mark>;
+      } else if (part.match(/\[[\s\S]*?\]\([\s\S]*?\)/)) {
+        const [text, url] = part.slice(1, -1).split("](");
+        return <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">{text}</a>;
+      } else if (part.startsWith('<color:#') && part.endsWith('</color>')) {
+        const [color, text] = part.slice(7, -8).split('>');
+        return <span key={index} style={{ color }}>{text}</span>;
+      } else if (part.startsWith('<size:') && part.endsWith('</size>')) {
+        const [size, text] = part.slice(6, -7).split('>');
+        return <span key={index} style={{ fontSize: size }}>{text}</span>;
+      } else if (part.startsWith('~~') && part.endsWith('~~')) {
+        return <del key={index} className="line-through">{part.slice(2, -2)}</del>;
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
+
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "content") {
+        setPreviewContent(value.content || "");
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-2xl mx-auto px-4 py-8"
+      className="max-w-4xl mx-auto px-4 py-8"
     >
       <h1 className="text-3xl font-bold text-center mb-8">ブログ編集</h1>
 
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
         <div className="mb-6">
           <ImageUploading
             value={imageUpload}
@@ -192,10 +247,9 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
                   <FormControl>
                     <Textarea
                       placeholder="ブログの内容を入力"
-                      rows={10}
                       {...field}
                       disabled={isPending}
-                      className="w-full p-2 border rounded-md"
+                      className="w-full p-2 border rounded-md min-h-[300px]"
                     />
                   </FormControl>
                   <FormMessage />
@@ -204,7 +258,7 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
             />
 
             <div className="space-y-4 w-full">
-              <FormError message={error} />
+              {error && <p className="text-red-500">{error}</p>}
 
               <Button
                 type="submit"
@@ -216,21 +270,32 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
                 ) : null}
                 <span>編集する</span>
               </Button>
-              <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
-                  <Info className="mr-2 text-blue-500" />
-                  テキスト装飾ガイド
-                </h3>
-                <ul className="space-y-2 text-gray-700">
-                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">```code```</code> コードブロック（コピー可能）</li>
-                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">**text**</code> <strong className="font-bold">太字</strong></li>
-                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">__text__</code> <span className="border-b-2 border-gray-500">下線</span></li>
-                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">==text==</code> <mark className="bg-yellow-200 px-1 rounded">ハイライト</mark></li>
-                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">[リンク](URL)</code> <a href="#" className="text-blue-600 hover:text-blue-800 underline">ハイパーリンク</a></li>
-                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;color:#FF0000&gt;text&lt;/color&gt;</code> <span style={{ color: '#FF0000' }}>色付きテキスト</span></li>
-                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;size:20px&gt;text&lt;/size&gt;</code> <span style={{ fontSize: '20px' }}>サイズ変更</span></li>
-                  <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">~~text~~</code> <del className="line-through">取り消し線</del></li>
-                </ul>
+            </div>
+          </form>
+        </Form>
+
+        <div className="bg-gray-100 rounded-lg p-4">
+          <h2 className="text-xl font-bold mb-4">プレビュー</h2>
+          <div className="prose max-w-none">
+            {renderFormattedContent(previewContent)}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+            <Info className="mr-2 text-blue-500" />
+            テキスト装飾ガイド
+          </h3>
+          <ul className="space-y-2 text-gray-700">
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">```code```</code> コードブロック（コピー可能）</li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">**text**</code> <strong className="font-bold">太字</strong></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">__text__</code> <span className="border-b-2 border-gray-500">下線</span></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">==text==</code> <mark className="bg-yellow-200 px-1 rounded">ハイライト</mark></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">[リンク](URL)</code> <a href="#" className="text-blue-600 hover:text-blue-800 underline">ハイパーリンク</a></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;color:#FF0000&gt;text&lt;/color&gt;</code> <span style={{ color: '#FF0000' }}>色付きテキスト</span></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;size:20px&gt;text&lt;/size&gt;</code> <span style={{ fontSize: '20px' }}>サイズ変更</span></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">~~text~~</code> <del className="line-through">取り消し線</del></li>
+          </ul>
                 <div className="mt-4">
                   <h4 className="font-semibold mb-2">カラーコード例：</h4>
                   <div className="flex flex-wrap gap-2">
