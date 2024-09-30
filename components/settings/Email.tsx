@@ -73,92 +73,88 @@ const Email = ({ email }: EmailProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-20 pb-12 px-4 sm:px-6 lg:px-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-lg"
+    >
+      <h2 className="text-3xl font-bold text-center mb-8 text-gradient">
+        メールアドレス変更
+      </h2>
+
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2 }}
+        className="mb-6 p-4 bg-gray-100 rounded-lg"
       >
-        <div className="p-6 sm:p-8">
-          <h2 className="text-3xl font-bold text-center mb-8 text-gradient">
-            メールアドレス変更
-          </h2>
-
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mb-6 p-4 bg-gray-100 rounded-lg"
-          >
-            <h3 className="text-sm font-semibold mb-2">現在のメールアドレス</h3>
-            <div className="flex items-center space-x-2">
-              <Mail className="w-5 h-5 text-blue-500" />
-              <span>{email}</span>
-            </div>
-          </motion.div>
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-lg font-semibold">
-                      新しいメールアドレス
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="example@example.com"
-                        {...field}
-                        disabled={isPending}
-                        className="border-2 border-gray-300 focus:border-blue-500 transition-all duration-300"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-
-              <AnimatePresence>
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="text-red-500 text-center"
-                  >
-                    {error}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
-                  disabled={isPending}
-                >
-                  {isPending ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <div className="flex items-center justify-center space-x-2">
-                      <span>変更リクエストを送信</span>
-                      <ArrowRight className="w-5 h-5" />
-                    </div>
-                  )}
-                </Button>
-              </motion.div>
-            </form>
-          </Form>
+        <h3 className="text-sm font-semibold mb-2">現在のメールアドレス</h3>
+        <div className="flex items-center space-x-2">
+          <Mail className="w-5 h-5 text-blue-500" />
+          <span>{email}</span>
         </div>
       </motion.div>
-    </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg font-semibold">
+                  新しいメールアドレス
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="example@example.com"
+                    {...field}
+                    disabled={isPending}
+                    className="border-2 border-gray-300 focus:border-blue-500 transition-all duration-300"
+                  />
+                </FormControl>
+                <FormMessage className="text-red-500" />
+              </FormItem>
+            )}
+          />
+
+          <AnimatePresence>
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="text-red-500 text-center"
+              >
+                {error}
+              </motion.p>
+            )}
+          </AnimatePresence>
+
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button
+              type="submit"
+              className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <div className="flex items-center justify-center space-x-2">
+                  <span>変更リクエストを送信</span>
+                  <ArrowRight className="w-5 h-5" />
+                </div>
+              )}
+            </Button>
+          </motion.div>
+        </form>
+      </Form>
+    </motion.div>
   );
 };
 
