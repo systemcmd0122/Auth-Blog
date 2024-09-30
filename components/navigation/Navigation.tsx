@@ -84,7 +84,7 @@ const Navigation = ({ user }: NavigationProps) => {
                   <Settings className="h-5 w-5 mr-2 text-indigo-600" />
                   設定
                 </Link>
-                <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
+                <Link href="/policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
                   <Shield className="h-5 w-5 mr-2 text-indigo-600" />
                   プライバシー
                 </Link>
@@ -105,7 +105,7 @@ const Navigation = ({ user }: NavigationProps) => {
                 <Link href="/signup" className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-2 rounded-lg transition duration-300">
                   サインアップ
                 </Link>
-                <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
+                <Link href="/policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
                   <Shield className="h-5 w-5 mr-2 text-indigo-600" />
                   プライバシー
                 </Link>
@@ -163,7 +163,7 @@ const Navigation = ({ user }: NavigationProps) => {
                     <Settings className="h-5 w-5 mr-2 text-indigo-600" />
                     設定
                   </Link>
-                  <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
+                  <Link href="/policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
                     <Shield className="h-5 w-5 mr-2 text-indigo-600" />
                     プライバシー
                   </Link>
@@ -180,7 +180,7 @@ const Navigation = ({ user }: NavigationProps) => {
                   <Link href="/signup" className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-2 rounded-lg text-center transition duration-300" onClick={() => setIsMenuOpen(false)}>
                     サインアップ
                   </Link>
-                  <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
+                  <Link href="/policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
                     <Shield className="h-5 w-5 mr-2 text-indigo-600" />
                     プライバシー
                   </Link>
