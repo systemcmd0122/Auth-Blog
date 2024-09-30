@@ -1,18 +1,18 @@
 'use client'
 
+import React, { useState, useEffect } from "react"
 import { User } from "@supabase/supabase-js"
 import { createClient } from "@/utils/supabase/client"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
-import { useState, useEffect } from "react"
 import { LogOut, Home, Users, Menu, X, PenTool, Settings, Shield, ChevronDown } from "lucide-react"
 
 interface NavigationProps {
   user: User | null
 }
 
-const Navigation = ({ user }: NavigationProps) => {
+const Navigation: React.FC<NavigationProps> = ({ user }) => {
   const router = useRouter()
   const supabase = createClient()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -49,7 +49,7 @@ const Navigation = ({ user }: NavigationProps) => {
     return () => {
       subscription.unsubscribe()
     }
-  }, [])
+  }, [supabase])
 
   return (
     <>
@@ -146,7 +146,15 @@ const Navigation = ({ user }: NavigationProps) => {
   )
 }
 
-const NavLink = ({ href, icon, label, onClick, delay }: { href: string; icon: React.ReactNode; label: string; onClick: () => void; delay: number }) => (
+interface NavLinkProps {
+  href: string;
+  icon: React.ReactElement;
+  label: string;
+  onClick: () => void;
+  delay: number;
+}
+
+const NavLink: React.FC<NavLinkProps> = ({ href, icon, label, onClick, delay }) => (
   <motion.div
     initial={{ opacity: 0, y: -20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -158,7 +166,7 @@ const NavLink = ({ href, icon, label, onClick, delay }: { href: string; icon: Re
       onClick={onClick}
     >
       <span className="flex items-center">
-        {React.cloneElement(icon as React.ReactElement, { className: "h-5 w-5 mr-3" })}
+        {React.cloneElement(icon, { className: "h-5 w-5 mr-3" })}
         {label}
       </span>
       <ChevronDown className="h-5 w-5" />
