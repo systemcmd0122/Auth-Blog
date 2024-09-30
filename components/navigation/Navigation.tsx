@@ -60,15 +60,22 @@ const Navigation = ({ user }: NavigationProps) => {
           </Link>
 
           <nav className="hidden md:flex items-center space-x-6">
-            <motion.div
-              className="flex items-center text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Users className="h-5 w-5 mr-2 text-indigo-600" />
-              <span className="font-bold">{userCount}</span> ユーザー
-            </motion.div>
+            <div className="flex items-center space-x-4">
+              <motion.div
+                className="flex items-center text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Users className="h-5 w-5 mr-2 text-indigo-600" />
+                <span className="font-bold">{userCount}</span> ユーザー
+              </motion.div>
+
+              <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
+                <Shield className="h-5 w-5 mr-2 text-indigo-600" />
+                プライバシー
+              </Link>
+            </div>
 
             {user ? (
               <div className="flex items-center space-x-4">
@@ -103,11 +110,6 @@ const Navigation = ({ user }: NavigationProps) => {
                 </Link>
               </div>
             )}
-
-            <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
-              <Shield className="h-5 w-5 mr-2 text-indigo-600" />
-              プライバシー
-            </Link>
           </nav>
 
           <button
@@ -146,6 +148,10 @@ const Navigation = ({ user }: NavigationProps) => {
                 <Users className="h-5 w-5 mr-2 text-indigo-600" />
                 <span className="font-bold">{userCount}</span> ユーザー
               </div>
+              <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
+                <Shield className="h-5 w-5 mr-2 text-indigo-600" />
+                プライバシーポリシー
+              </Link>
               {user ? (
                 <>
                   <Link href="/" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
@@ -175,10 +181,6 @@ const Navigation = ({ user }: NavigationProps) => {
                   </Link>
                 </>
               )}
-              <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                <Shield className="h-5 w-5 mr-2 text-indigo-600" />
-                プライバシーポリシー
-              </Link>
             </div>
           </motion.nav>
         )}
