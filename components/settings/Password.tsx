@@ -69,82 +69,81 @@ const Password = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-20 pb-10 px-4 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-6 sm:p-8"
-      >
-        <h2 className="text-3xl font-bold text-center mb-8 text-gradient">
-          パスワード変更
-        </h2>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-lg"
+    >
+      <h2 className="text-3xl font-bold text-center mb-8 text-gradient">
+        パスワード変更
+      </h2>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg font-semibold">
-                    新しいパスワード
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={passwordVisibility1 ? "text" : "password"}
-                        placeholder="********"
-                        {...field}
-                        disabled={isPending}
-                        className="pr-10 border-2 border-gray-300 focus:border-blue-500 transition-all duration-300"
-                      />
-                      <button
-                        type="button"
-                        className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                        onClick={() => setPasswordVisibility1(!passwordVisibility1)}
-                      >
-                        {passwordVisibility1 ? (
-                          <EyeOffIcon className="w-5 h-5" />
-                        ) : (
-                          <EyeIcon className="w-5 h-5" />
-                        )}
-                      </button>
-                    </div>
-                  </FormControl>
-                  <FormMessage className="text-red-500" />
-                </FormItem>
-              )}
-            />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg font-semibold">
+                  新しいパスワード
+                </FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={passwordVisibility1 ? "text" : "password"}
+                      placeholder="********"
+                      {...field}
+                      disabled={isPending}
+                      className="pr-10 border-2 border-gray-300 focus:border-blue-500 transition-all duration-300"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                      onClick={() => setPasswordVisibility1(!passwordVisibility1)}
+                    >
+                      {passwordVisibility1 ? (
+                        <EyeOffIcon className="w-5 h-5" />
+                      ) : (
+                        <EyeIcon className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </FormControl>
+                <FormMessage className="text-red-500" />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="confirmation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg font-semibold">
-                    パスワードの確認
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={passwordVisibility2 ? "text" : "password"}
-                        placeholder="********"
-                        {...field}
-                        disabled={isPending}
-                        className="pr-10 border-2 border-gray-300 focus:border-blue-500 transition-all duration-300"
-                      />
-                      <button
-                        type="button"
-                        className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                        onClick={() => setPasswordVisibility2(!passwordVisibility2)}
-                      >
-                        {passwordVisibility2 ? (
-                          <EyeOffIcon className="w-5 h-5" />
-                        ) : (
-                          <EyeIcon className="w-5 h-5" />
-                        )}
-                      </button>
+          <FormField
+            control={form.control}
+            name="confirmation"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg font-semibold">
+                  パスワードの確認
+                </FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={passwordVisibility2 ? "text" : "password"}
+                      placeholder="********"
+                      {...field}
+                      disabled={isPending}
+                      className="pr-10 border-2 border-gray-300 focus:border-blue-500 transition-all duration-300"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                      onClick={() => setPasswordVisibility2(!passwordVisibility2)}
+                    >
+                      {passwordVisibility2 ? (
+                        <EyeOffIcon className="w-5 h-5" />
+                      ) : (
+                        <EyeIcon className="w-5 h-5" />
+                      )}
+                    </button>
                   </div>
                 </FormControl>
                 <FormMessage className="text-red-500" />
