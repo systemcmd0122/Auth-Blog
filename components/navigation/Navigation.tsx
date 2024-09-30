@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
-import { LogOut, Home, Users, Menu, X, PenTool, Settings } from "lucide-react"
+import { LogOut, Home, Users, Menu, X, PenTool, Settings, Shield } from "lucide-react"
 
 interface NavigationProps {
   user: User | null
@@ -103,6 +103,11 @@ const Navigation = ({ user }: NavigationProps) => {
                 </Link>
               </div>
             )}
+
+            <Link href="@/app/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
+              <Shield className="h-5 w-5 mr-2 text-indigo-600" />
+              プライバシー
+            </Link>
           </nav>
 
           <button
@@ -170,6 +175,10 @@ const Navigation = ({ user }: NavigationProps) => {
                   </Link>
                 </>
               )}
+              <Link href="@/app/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
+                <Shield className="h-5 w-5 mr-2 text-indigo-600" />
+                プライバシーポリシー
+              </Link>
             </div>
           </motion.nav>
         )}
