@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { format } from 'date-fns';
-import { Send, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Send, Trash2, ChevronDown, ChevronUp, CornerDownRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface CommentType {
@@ -12,15 +12,19 @@ interface CommentType {
   content: string;
   user_id: string;
   profile_id: string;
-  parent_comment_id: string | null;
   created_at: string;
-  depth: number;
+  updated_at: string;
   profiles: {
     id: string;
     name: string;
     avatar_url: string | null;
   };
-  replies?: CommentType[];
+}
+
+interface ProcessedCommentType extends CommentType {
+  replies?: ProcessedCommentType[];
+  replyTo?: string;
+  level: number;
 }
 
 interface CommentsProps {
@@ -28,8 +32,10 @@ interface CommentsProps {
   currentUser: User | null;
 }
 
+const REPLY_PREFIX = '@reply:';
+
 const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
-  const [comments, setComments] = useState<CommentType[]>([]);
+  const [comments, setComments] = useState<ProcessedCommentType[]>([]);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
@@ -52,17 +58,17 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
 
   const fetchComments = async () => {
     const { data, error } = await supabase
-      .from('hierarchical_comments')
+      .from('comments')
       .select(`
         *,
-        profiles:profile_id (
+        profiles (
           id,
           name,
           avatar_url
         )
       `)
       .eq('blog_id', blogId)
-      .order('path', { ascending: true });
+      .order('created_at', { ascending: true });
 
     if (error) {
       console.error('Error fetching comments:', error);
@@ -70,25 +76,33 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
       return;
     }
 
-    const hierarchicalComments = buildCommentHierarchy(data as CommentType[]);
-    setComments(hierarchicalComments);
+    const processedComments = processComments(data as CommentType[]);
+    setComments(processedComments);
   };
 
-  const buildCommentHierarchy = (flatComments: CommentType[]): CommentType[] => {
-    const commentMap = new Map<string, CommentType>();
-    const rootComments: CommentType[] = [];
+  const processComments = (rawComments: CommentType[]): ProcessedCommentType[] => {
+    const commentMap = new Map<string, ProcessedCommentType>();
+    const rootComments: ProcessedCommentType[] = [];
 
-    flatComments.forEach(comment => {
-      comment.replies = [];
-      commentMap.set(comment.id, comment);
+    rawComments.forEach(comment => {
+      const processedComment: ProcessedCommentType = { ...comment, level: 0, replies: [] };
       
-      if (comment.parent_comment_id === null) {
-        rootComments.push(comment);
+      if (comment.content.startsWith(REPLY_PREFIX)) {
+        const [replyTo, ...contentParts] = comment.content.slice(REPLY_PREFIX.length).split(' ');
+        processedComment.replyTo = replyTo;
+        processedComment.content = contentParts.join(' ');
+      }
+
+      commentMap.set(comment.id, processedComment);
+    });
+
+    commentMap.forEach(comment => {
+      if (comment.replyTo && commentMap.has(comment.replyTo)) {
+        const parentComment = commentMap.get(comment.replyTo)!;
+        parentComment.replies!.push(comment);
+        comment.level = parentComment.level + 1;
       } else {
-        const parentComment = commentMap.get(comment.parent_comment_id);
-        if (parentComment) {
-          parentComment.replies?.push(comment);
-        }
+        rootComments.push(comment);
       }
     });
 
@@ -104,12 +118,16 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
     if (!newComment.trim()) return;
 
     setIsLoading(true);
+    let content = newComment.trim();
+    if (replyingTo) {
+      content = `${REPLY_PREFIX}${replyingTo} ${content}`;
+    }
+
     const { error } = await supabase.from('comments').insert({
       blog_id: blogId,
       user_id: currentUser.id,
       profile_id: currentUser.id,
-      content: newComment.trim(),
-      parent_comment_id: replyingTo,
+      content: content,
     });
 
     setIsLoading(false);
@@ -159,12 +177,12 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
     });
   };
 
-  const renderComment = (comment: CommentType, level: number = 0) => {
+  const renderComment = (comment: ProcessedCommentType) => {
     const isExpanded = expandedComments.has(comment.id);
     const hasReplies = comment.replies && comment.replies.length > 0;
 
     return (
-      <div key={comment.id} className={`ml-${level * 4} mt-4`}>
+      <div key={comment.id} className={`ml-${comment.level * 4} mt-4`}>
         <div className="bg-gray-50 p-4 rounded-lg">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
@@ -179,7 +197,10 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
               {format(new Date(comment.created_at), 'yyyy/MM/dd HH:mm')}
             </span>
           </div>
-          <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+          <div className="flex items-center space-x-2">
+            {comment.replyTo && <CornerDownRight className="w-4 h-4 text-gray-400" />}
+            <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+          </div>
           <div className="mt-2 flex items-center space-x-4">
             <button
               onClick={() => toggleReply(comment.id)}
@@ -237,7 +258,7 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
         )}
         {isExpanded && comment.replies && (
           <div className="ml-4">
-            {comment.replies.map(reply => renderComment(reply, level + 1))}
+            {comment.replies.map(reply => renderComment(reply))}
           </div>
         )}
       </div>
