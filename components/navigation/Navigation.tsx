@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
-import { LogOut, Home, Users, Menu, X, PenTool, Settings, Shield } from "lucide-react"
+import { LogOut, Home, Users, Menu, X, PenTool, Settings, Shield, ChevronDown } from "lucide-react"
 
 interface NavigationProps {
   user: User | null
@@ -19,7 +19,7 @@ const Navigation = ({ user }: NavigationProps) => {
   const [userCount, setUserCount] = useState<number>(0)
 
   const handleLogout = async () => {
-    if (!window.confirm("ログアウトしますが、よろしいですか？")) {
+    if (!window.confirm("ログアウトしますか？")) {
       return
     }
 
@@ -52,141 +52,118 @@ const Navigation = ({ user }: NavigationProps) => {
   }, [])
 
   return (
-    <header className="bg-white shadow-md">
-      <div className="container mx-auto max-w-screen-xl px-4 py-4">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="text-3xl font-extrabold text-indigo-600 hover:text-indigo-700 transition duration-300">
-            Void Pulse
-          </Link>
+    <>
+      <header className="fixed top-0 left-0 right-0 bg-white bg-opacity-90 backdrop-blur-md shadow-sm z-50">
+        <div className="container mx-auto max-w-screen-xl px-4 py-3">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="text-2xl font-extrabold text-indigo-600 hover:text-indigo-700 transition duration-300">
+              Void Pulse
+            </Link>
 
-          <nav className="hidden md:flex items-center space-x-6">
-            <div className="flex items-center space-x-4">
-              <motion.div
-                className="flex items-center text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Users className="h-5 w-5 mr-2 text-indigo-600" />
-                <span className="font-bold">{userCount}</span> ユーザー
-              </motion.div>
-
-              <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
-                <Shield className="h-5 w-5 mr-2 text-indigo-600" />
-                プライバシー
-              </Link>
-            </div>
-
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <Link href="/" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
-                  <Home className="h-5 w-5 mr-2 text-indigo-600" />
-                  ホーム
-                </Link>
-                <Link href="/blog/new" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
-                  <PenTool className="h-5 w-5 mr-2 text-indigo-600" />
-                  投稿
-                </Link>
-                <Link href="/settings/profile" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
-                  <Settings className="h-5 w-5 mr-2 text-indigo-600" />
-                  設定
-                </Link>
-                <button 
-                  onClick={handleLogout} 
-                  className="flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg transition duration-300"
-                  aria-label="ログアウト"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span className="sr-only">ログアウト</span>
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Link href="/login" className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6 py-2 rounded-lg transition duration-300">
-                  ログイン
-                </Link>
-                <Link href="/signup" className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-2 rounded-lg transition duration-300">
-                  サインアップ
-                </Link>
-              </div>
-            )}
-          </nav>
-
-          <button
-            className="md:hidden bg-gray-100 text-gray-700 hover:bg-gray-200 p-2 rounded-lg transition duration-300"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+            <button
+              className="text-gray-600 hover:text-indigo-600 p-2 rounded-full transition duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
 
       <AnimatePresence>
         {isMenuOpen && (
           <motion.nav
-            className="md:hidden fixed inset-0 bg-white z-50 flex flex-col"
-            initial={{ opacity: 0, y: -50 }}
+            className="fixed inset-0 bg-white z-40 pt-16 pb-6 px-4 overflow-y-auto"
+            initial={{ opacity: 0, y: "-100%" }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, y: "-100%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            <div className="flex justify-between items-center p-4 border-b">
-              <Link href="/" className="text-2xl font-extrabold text-indigo-600" onClick={() => setIsMenuOpen(false)}>
-                Void Pulse
-              </Link>
-              <button 
-                onClick={() => setIsMenuOpen(false)} 
-                className="bg-gray-100 text-gray-700 hover:bg-gray-200 p-2 rounded-lg transition duration-300"
-                aria-label="メニューを閉じる"
+            <div className="container mx-auto max-w-screen-xl space-y-6">
+              <motion.div
+                className="flex items-center justify-center text-lg font-medium text-gray-600 bg-indigo-50 px-4 py-3 rounded-2xl"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
               >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div className="flex flex-col p-4 space-y-4">
-              <div className="text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg flex items-center justify-center">
                 <Users className="h-5 w-5 mr-2 text-indigo-600" />
-                <span className="font-bold">{userCount}</span> ユーザー
-              </div>
-              <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                <Shield className="h-5 w-5 mr-2 text-indigo-600" />
-                プライバシーポリシー
-              </Link>
+                <span className="font-bold text-indigo-600">{userCount}</span>
+                <span className="ml-1">ユーザー</span>
+              </motion.div>
+
               {user ? (
-                <>
-                  <Link href="/" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                    <Home className="h-5 w-5 mr-2 text-indigo-600" />
-                    ホーム
-                  </Link>
-                  <Link href="/blog/new" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                    <PenTool className="h-5 w-5 mr-2 text-indigo-600" />
-                    投稿
-                  </Link>
-                  <Link href="/settings/profile" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                    <Settings className="h-5 w-5 mr-2 text-indigo-600" />
-                    設定
-                  </Link>
-                  <button onClick={handleLogout} className="w-full flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg transition duration-300">
-                    <LogOut className="h-5 w-5 mr-2" />
-                    ログアウト
-                  </button>
-                </>
+                <div className="space-y-4">
+                  <NavLink href="/" icon={<Home />} label="ホーム" onClick={() => setIsMenuOpen(false)} delay={0.2} />
+                  <NavLink href="/blog/new" icon={<PenTool />} label="投稿" onClick={() => setIsMenuOpen(false)} delay={0.3} />
+                  <NavLink href="/settings/profile" icon={<Settings />} label="設定" onClick={() => setIsMenuOpen(false)} delay={0.4} />
+                  <NavLink href="/privacy-policy" icon={<Shield />} label="プライバシーポリシー" onClick={() => setIsMenuOpen(false)} delay={0.5} />
+                  <motion.button
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-between text-red-600 hover:bg-red-50 px-4 py-3 rounded-xl transition duration-300"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                  >
+                    <span className="flex items-center">
+                      <LogOut className="h-5 w-5 mr-3" />
+                      ログアウト
+                    </span>
+                    <ChevronDown className="h-5 w-5" />
+                  </motion.button>
+                </div>
               ) : (
-                <>
-                  <Link href="/login" className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6 py-2 rounded-lg text-center transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                    ログイン
-                  </Link>
-                  <Link href="/signup" className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-2 rounded-lg text-center transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                    サインアップ
-                  </Link>
-                </>
+                <div className="space-y-4">
+                  <NavLink href="/privacy-policy" icon={<Shield />} label="プライバシーポリシー" onClick={() => setIsMenuOpen(false)} delay={0.2} />
+                  <motion.div
+                    className="grid grid-cols-2 gap-4"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <Link
+                      href="/login"
+                      className="text-center text-indigo-600 hover:bg-indigo-50 px-4 py-3 rounded-xl transition duration-300"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      ログイン
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="text-center bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-3 rounded-xl transition duration-300"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      サインアップ
+                    </Link>
+                  </motion.div>
+                </div>
               )}
             </div>
           </motion.nav>
         )}
       </AnimatePresence>
-    </header>
+    </>
   )
 }
+
+const NavLink = ({ href, icon, label, onClick, delay }: { href: string; icon: React.ReactNode; label: string; onClick: () => void; delay: number }) => (
+  <motion.div
+    initial={{ opacity: 0, y: -20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+  >
+    <Link
+      href={href}
+      className="flex items-center justify-between text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 px-4 py-3 rounded-xl transition duration-300"
+      onClick={onClick}
+    >
+      <span className="flex items-center">
+        {React.cloneElement(icon as React.ReactElement, { className: "h-5 w-5 mr-3" })}
+        {label}
+      </span>
+      <ChevronDown className="h-5 w-5" />
+    </Link>
+  </motion.div>
+)
 
 export default Navigation
