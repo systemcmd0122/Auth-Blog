@@ -104,8 +104,8 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+    <div className="min-h-screen bg-gray-100 pt-20 pb-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-6 sm:p-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
           プロフィール
         </h1>
