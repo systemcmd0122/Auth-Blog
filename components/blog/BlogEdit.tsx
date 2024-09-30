@@ -1,7 +1,5 @@
 "use client"
 
-"use client"
-
 import React, { useState, useTransition, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -296,24 +294,20 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
             <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;size:20px&gt;text&lt;/size&gt;</code> <span style={{ fontSize: '20px' }}>サイズ変更</span></li>
             <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">~~text~~</code> <del className="line-through">取り消し線</del></li>
           </ul>
-                <div className="mt-4">
-                  <h4 className="font-semibold mb-2">カラーコード例：</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'].map((color) => (
-                      <div key={color} className="flex items-center">
-                        <div className="w-6 h-6 rounded mr-1" style={{ backgroundColor: color }}></div>
-                        <code className="text-sm">{color}</code>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+          <div className="mt-4">
+            <h4 className="font-semibold mb-2">カラーコード例：</h4>
+            <div className="flex flex-wrap gap-2">
+              {['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'].map((color) => (
+                <div key={color} className="flex items-center">
+                  <div className="w-6 h-6 rounded mr-1" style={{ backgroundColor: color }}></div>
+                <code className="text-sm">{color}</code>
               </div>
+            ))}
             </div>
-          </form>
-        </Form>
+          </div>
+        </div>
       </div>
-    </motion.div>
+</motion.div>
   );
-};
-
+    };
 export default BlogEdit;
