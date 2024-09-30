@@ -1,7 +1,23 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Shield, Lock, Eye, Database, Trash2 } from 'lucide-react';
 
-const PrivacyPolicy = () => {
+interface SectionProps {
+  icon: ReactNode; // ReactNode type allows any valid React element
+  title: string;
+  content: string;
+}
+
+const Section: React.FC<SectionProps> = ({ icon, title, content }) => (
+  <div className="bg-white shadow-md rounded-lg p-6">
+    <div className="flex items-center mb-4">
+      {icon}
+      <h2 className="text-xl font-semibold ml-4">{title}</h2>
+    </div>
+    <p className="text-gray-700">{content}</p>
+  </div>
+);
+
+const PrivacyPolicy: React.FC = () => {
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <h1 className="text-3xl font-bold mb-8 text-center text-indigo-600">プライバシーポリシー</h1>
@@ -44,15 +60,5 @@ const PrivacyPolicy = () => {
     </div>
   );
 };
-
-const Section = ({ icon, title, content }) => (
-  <div className="bg-white shadow-md rounded-lg p-6">
-    <div className="flex items-center mb-4">
-      {icon}
-      <h2 className="text-xl font-semibold ml-4">{title}</h2>
-    </div>
-    <p className="text-gray-700">{content}</p>
-  </div>
-);
 
 export default PrivacyPolicy;
