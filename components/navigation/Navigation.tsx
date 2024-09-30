@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
-import { LogOut, Home, Users, Menu, X, PenTool, Settings } from "lucide-react"
+import { LogOut, Home, Users, Menu, X, PenTool, Settings, Shield } from "lucide-react"
 
 interface NavigationProps {
   user: User | null
@@ -84,6 +84,10 @@ const Navigation = ({ user }: NavigationProps) => {
                   <Settings className="h-5 w-5 mr-2 text-indigo-600" />
                   設定
                 </Link>
+                <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
+                  <Shield className="h-5 w-5 mr-2 text-indigo-600" />
+                  プライバシー
+                </Link>
                 <button 
                   onClick={handleLogout} 
                   className="flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg transition duration-300"
@@ -100,6 +104,10 @@ const Navigation = ({ user }: NavigationProps) => {
                 </Link>
                 <Link href="/signup" className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-2 rounded-lg transition duration-300">
                   サインアップ
+                </Link>
+                <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
+                  <Shield className="h-5 w-5 mr-2 text-indigo-600" />
+                  プライバシー
                 </Link>
               </div>
             )}
@@ -155,6 +163,10 @@ const Navigation = ({ user }: NavigationProps) => {
                     <Settings className="h-5 w-5 mr-2 text-indigo-600" />
                     設定
                   </Link>
+                  <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
+                    <Shield className="h-5 w-5 mr-2 text-indigo-600" />
+                    プライバシー
+                  </Link>
                   <button onClick={handleLogout} className="w-full flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg transition duration-300">
                     <LogOut className="h-5 w-5 mr-2" />
                     ログアウト
@@ -167,6 +179,10 @@ const Navigation = ({ user }: NavigationProps) => {
                   </Link>
                   <Link href="/signup" className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-2 rounded-lg text-center transition duration-300" onClick={() => setIsMenuOpen(false)}>
                     サインアップ
+                  </Link>
+                  <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
+                    <Shield className="h-5 w-5 mr-2 text-indigo-600" />
+                    プライバシー
                   </Link>
                 </>
               )}
