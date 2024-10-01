@@ -110,7 +110,7 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
           プロフィール編集
         </h1>
 
-        <div className="mb-8">
+        <div className="mb-8 flex justify-center">
           <ImageUploading
             value={imageUpload}
             onChange={onChangeImage}
