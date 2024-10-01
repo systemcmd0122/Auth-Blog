@@ -104,130 +104,132 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
-          プロフィール編集
-        </h1>
+    <div className="min-h-screen bg-gray-50 pt-4">
+      <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+        <div className="p-8">
+          <h1 className="text-3xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
+            プロフィール編集
+          </h1>
 
-        <div className="mb-8 flex justify-center">
-          <ImageUploading
-            value={imageUpload}
-            onChange={onChangeImage}
-            maxNumber={1}
-            acceptType={["jpg", "png", "jpeg"]}
-          >
-            {({ imageList, onImageUpload, onImageUpdate, dragProps }) => (
-              <div className="flex flex-col items-center justify-center">
-                {imageList.length == 0 ? (
-                  <button
-                    className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white overflow-hidden relative group transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      onImageUpload()
-                    }}
-                    {...dragProps}
-                  >
-                    <Camera size={32} className="z-10" />
-                    <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-200" />
-                  </button>
-                ) : (
-                  <div
-                    className="w-32 h-32 sm:w-40 sm:h-40 relative rounded-full overflow-hidden border-4 border-indigo-500 group transition-transform duration-200 ease-in-out hover:scale-105"
-                  >
-                    <Image
-                      fill
-                      src={imageList[0].dataURL || "/default.png"}
-                      alt="avatar"
-                      className="object-cover"
-                      priority
-                      sizes="(max-width: 640px) 128px, 160px"
-                    />
-                    <div
-                      className="absolute inset-0 bg-black opacity-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-70"
+          <div className="mb-8">
+            <ImageUploading
+              value={imageUpload}
+              onChange={onChangeImage}
+              maxNumber={1}
+              acceptType={["jpg", "png", "jpeg"]}
+            >
+              {({ imageList, onImageUpload, onImageUpdate, dragProps }) => (
+                <div className="flex flex-col items-center justify-center">
+                  {imageList.length == 0 ? (
+                    <button
+                      className="w-32 h-32 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white overflow-hidden relative group transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        onImageUpload()
+                      }}
+                      {...dragProps}
                     >
-                      <Button
-                        variant="ghost"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          onImageUpdate(0)
-                        }}
-                        className="text-white hover:text-indigo-200"
+                      <Camera size={32} className="z-10" />
+                      <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-200" />
+                    </button>
+                  ) : (
+                    <div
+                      className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-indigo-500 group transition-transform duration-200 ease-in-out hover:scale-105"
+                    >
+                      <Image
+                        fill
+                        src={imageList[0].dataURL || "/default.png"}
+                        alt="avatar"
+                        className="object-cover"
+                        priority
+                        sizes="(max-width: 640px) 128px, 160px"
+                      />
+                      <div
+                        className="absolute inset-0 bg-black opacity-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-70"
                       >
-                        画像を変更
-                      </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            onImageUpdate(0)
+                          }}
+                          className="text-white hover:text-indigo-200"
+                        >
+                          画像を変更
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  )}
+                </div>
+              )}
+            </ImageUploading>
+          </div>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold flex items-center text-indigo-600">
+                      <User className="mr-2" size={18} /> 名前
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="田中太郎"
+                        {...field}
+                        disabled={isPending}
+                        className="border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
+              />
+
+              <FormField
+                control={form.control}
+                name="introduce"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold flex items-center text-indigo-600">
+                      <FileText className="mr-2" size={18} /> 自己紹介
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="よろしくお願いします。"
+                        rows={4}
+                        {...field}
+                        disabled={isPending}
+                        className="border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="space-y-4 w-full">
+                {error && <FormError message={error} />}
+
+                <Button
+                  type="submit"
+                  className="w-full py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                  disabled={isPending}
+                >
+                  {isPending ? (
+                    <span className="animate-spin">&#8987;</span>
+                  ) : isSuccess ? (
+                    <CheckCircle className="text-green-400" />
+                  ) : (
+                    <span>変更</span>
+                  )}
+                </Button>
               </div>
-            )}
-          </ImageUploading>
+            </form>
+          </Form>
         </div>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-bold flex items-center text-indigo-600">
-                    <User className="mr-2" size={18} /> 名前
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="田中太郎"
-                      {...field}
-                      disabled={isPending}
-                      className="border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="introduce"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-bold flex items-center text-indigo-600">
-                    <FileText className="mr-2" size={18} /> 自己紹介
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="よろしくお願いします。"
-                      rows={4}
-                      {...field}
-                      disabled={isPending}
-                      className="border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="space-y-4 w-full">
-              {error && <FormError message={error} />}
-
-              <Button
-                type="submit"
-                className="w-full py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
-                disabled={isPending}
-              >
-                {isPending ? (
-                  <span className="animate-spin">&#8987;</span>
-                ) : isSuccess ? (
-                  <CheckCircle className="text-green-400" />
-                ) : (
-                  <span>変更</span>
-                )}
-              </Button>
-            </div>
-          </form>
-        </Form>
       </div>
     </div>
   )
