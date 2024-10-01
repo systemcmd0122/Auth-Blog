@@ -109,9 +109,9 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen pt-6 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen pt-6"
     >
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
           プロフィール編集
         </h1>
@@ -132,7 +132,7 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
               <div className="flex flex-col items-center justify-center">
                 {imageList.length === 0 ? (
                   <motion.button
-                    className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white overflow-hidden relative group transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95"
+                    className="w-40 h-40 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white overflow-hidden relative group transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95"
                     onClick={(e) => {
                       e.preventDefault()
                       onImageUpload()
@@ -141,12 +141,12 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Camera size={32} className="z-10" />
+                    <Camera size={40} className="z-10" />
                     <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-200" />
                   </motion.button>
                 ) : (
                   <motion.div
-                    className="w-32 h-32 sm:w-40 sm:h-40 relative rounded-full overflow-hidden border-4 border-indigo-500 group transition-transform duration-200 ease-in-out hover:scale-105"
+                    className="w-40 h-40 relative rounded-full overflow-hidden border-4 border-indigo-500 group transition-transform duration-200 ease-in-out hover:scale-105"
                     whileHover={{ scale: 1.05 }}
                   >
                     <Image
@@ -155,7 +155,7 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
                       alt="avatar"
                       className="object-cover"
                       priority
-                      sizes="(max-width: 768px) 128px, 160px"
+                      sizes="(max-width: 768px) 160px, 200px"
                     />
                     <motion.div
                       className="absolute inset-0 bg-black opacity-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-70"
@@ -200,7 +200,7 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
                         placeholder="田中太郎"
                         {...field}
                         disabled={isPending}
-                        className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3 rounded-lg"
+                        className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3"
                       />
                     </FormControl>
                     <FormMessage />
@@ -225,10 +225,10 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
                     <FormControl>
                       <Textarea
                         placeholder="よろしくお願いします。"
-                        rows={6}
+                        rows={8}
                         {...field}
                         disabled={isPending}
-                        className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3 rounded-lg"
+                        className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3"
                       />
                     </FormControl>
                     <FormMessage />
@@ -257,11 +257,11 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
               >
                 <Button
                   type="submit"
-                  className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                   disabled={isPending}
                 >
                   {isPending ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : isSuccess ? (
                     <CheckCircle className="text-green-400" size={24} />
                   ) : (
