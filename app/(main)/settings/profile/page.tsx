@@ -3,12 +3,9 @@ import { redirect } from "next/navigation"
 import { ProfileType } from "@/types"
 import { Suspense } from "react"
 import Profile from "@/components/settings/Profile"
-import Email from "@/components/settings/Email"
-import Password from "@/components/settings/Password"
 import Loading from "@/app/loading"
-import SettingsLayout from "@/components/settings/SettingsLayout"
 
-const SettingsPage = async () => {
+const ProfilePage = async () => {
   const supabase = createClient()
   const { data: userData } = await supabase.auth.getUser()
   const user = userData?.user
@@ -35,13 +32,9 @@ const SettingsPage = async () => {
 
   return (
     <Suspense fallback={<Loading />}>
-      <SettingsLayout>
-        <Profile profile={profile} />
-        <Email email={user.email} />
-        <Password />
-      </SettingsLayout>
+      <Profile profile={profile} />
     </Suspense>
   )
 }
 
-export default SettingsPage
+export default ProfilePage
