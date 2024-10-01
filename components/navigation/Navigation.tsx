@@ -51,6 +51,12 @@ const Navigation = ({ user }: NavigationProps) => {
     }
   }, [])
 
+  const menuItems = [
+    { href: "/", icon: Home, text: "ホーム" },
+    { href: "/blog/new", icon: PenTool, text: "投稿" },
+    { href: "/settings/profile", icon: Settings, text: "設定" },
+  ]
+
   return (
     <header className="bg-white shadow-md">
       <div className="container mx-auto max-w-screen-xl px-4 py-4">
@@ -59,73 +65,32 @@ const Navigation = ({ user }: NavigationProps) => {
             Void Pulse
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-6">
-            <div className="flex items-center space-x-4">
-              <motion.div
-                className="flex items-center text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Users className="h-5 w-5 mr-2 text-indigo-600" />
-                <span className="font-bold">{userCount}</span> ユーザー
-              </motion.div>
+          <div className="flex items-center space-x-4">
+            <motion.div
+              className="flex items-center text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Users className="h-5 w-5 mr-2 text-indigo-600" />
+              <span className="font-bold">{userCount}</span> ユーザー
+            </motion.div>
 
-              <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
-                <Shield className="h-5 w-5 mr-2 text-indigo-600" />
-                プライバシー
-              </Link>
-            </div>
-
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <Link href="/" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
-                  <Home className="h-5 w-5 mr-2 text-indigo-600" />
-                  ホーム
-                </Link>
-                <Link href="/blog/new" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
-                  <PenTool className="h-5 w-5 mr-2 text-indigo-600" />
-                  投稿
-                </Link>
-                <Link href="/settings/profile" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300">
-                  <Settings className="h-5 w-5 mr-2 text-indigo-600" />
-                  設定
-                </Link>
-                <button 
-                  onClick={handleLogout} 
-                  className="flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg transition duration-300"
-                  aria-label="ログアウト"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span className="sr-only">ログアウト</span>
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Link href="/login" className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6 py-2 rounded-lg transition duration-300">
-                  ログイン
-                </Link>
-                <Link href="/signup" className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-2 rounded-lg transition duration-300">
-                  サインアップ
-                </Link>
-              </div>
-            )}
-          </nav>
-
-          <button
-            className="md:hidden bg-gray-100 text-gray-700 hover:bg-gray-200 p-2 rounded-lg transition duration-300"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+            <button
+              className="bg-gray-100 text-gray-700 hover:bg-gray-200 p-2 rounded-lg transition duration-300"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
       </div>
 
       <AnimatePresence>
         {isMenuOpen && (
           <motion.nav
-            className="md:hidden fixed inset-0 bg-white z-50 flex flex-col"
+            className="fixed inset-0 bg-white z-50 flex flex-col"
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
@@ -143,7 +108,7 @@ const Navigation = ({ user }: NavigationProps) => {
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <div className="flex flex-col p-4 space-y-4">
+            <div className="flex flex-col p-4 space-y-4 overflow-y-auto">
               <div className="text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg flex items-center justify-center">
                 <Users className="h-5 w-5 mr-2 text-indigo-600" />
                 <span className="font-bold">{userCount}</span> ユーザー
@@ -154,18 +119,12 @@ const Navigation = ({ user }: NavigationProps) => {
               </Link>
               {user ? (
                 <>
-                  <Link href="/" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                    <Home className="h-5 w-5 mr-2 text-indigo-600" />
-                    ホーム
-                  </Link>
-                  <Link href="/blog/new" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                    <PenTool className="h-5 w-5 mr-2 text-indigo-600" />
-                    投稿
-                  </Link>
-                  <Link href="/settings/profile" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                    <Settings className="h-5 w-5 mr-2 text-indigo-600" />
-                    設定
-                  </Link>
+                  {menuItems.map((item) => (
+                    <Link key={item.href} href={item.href} className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
+                      <item.icon className="h-5 w-5 mr-2 text-indigo-600" />
+                      {item.text}
+                    </Link>
+                  ))}
                   <button onClick={handleLogout} className="w-full flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg transition duration-300">
                     <LogOut className="h-5 w-5 mr-2" />
                     ログアウト
