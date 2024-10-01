@@ -61,9 +61,15 @@ const Navigation = ({ user }: NavigationProps) => {
     <header className="bg-white shadow-md">
       <div className="container mx-auto max-w-screen-xl px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="text-3xl font-extrabold text-indigo-600 hover:text-indigo-700 transition duration-300">
-            Void Pulse
-          </Link>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Link href="/" className="text-3xl font-extrabold text-indigo-600 hover:text-indigo-700 transition duration-300">
+              Void Pulse
+            </Link>
+          </motion.div>
 
           <motion.div
             className="flex items-center text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg"
@@ -72,16 +78,35 @@ const Navigation = ({ user }: NavigationProps) => {
             transition={{ duration: 0.5 }}
           >
             <Users className="h-5 w-5 mr-2 text-indigo-600" />
-            <span className="font-bold">{userCount}</span> ユーザー
+            <motion.span
+              className="font-bold"
+              initial={{ scale: 1 }}
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
+            >
+              {userCount}
+            </motion.span> ユーザー
           </motion.div>
 
-          <button
+          <motion.button
             className="bg-gray-100 text-gray-700 hover:bg-gray-200 p-2 rounded-lg transition duration-300"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={isMenuOpen ? "close" : "open"}
+                initial={{ rotate: -180, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 180, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </motion.div>
+            </AnimatePresence>
+          </motion.button>
         </div>
       </div>
 
@@ -98,40 +123,73 @@ const Navigation = ({ user }: NavigationProps) => {
               <Link href="/" className="text-2xl font-extrabold text-indigo-600" onClick={() => setIsMenuOpen(false)}>
                 Void Pulse
               </Link>
-              <button 
+              <motion.button 
                 onClick={() => setIsMenuOpen(false)} 
                 className="bg-gray-100 text-gray-700 hover:bg-gray-200 p-2 rounded-lg transition duration-300"
                 aria-label="メニューを閉じる"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <X className="h-6 w-6" />
-              </button>
+              </motion.button>
             </div>
             <div className="flex flex-col p-4 space-y-4 overflow-y-auto">
-              <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                <Shield className="h-5 w-5 mr-2 text-indigo-600" />
-                プライバシーポリシー
-              </Link>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
+                  <Shield className="h-5 w-5 mr-2 text-indigo-600" />
+                  プライバシーポリシー
+                </Link>
+              </motion.div>
               {user ? (
                 <>
-                  {menuItems.map((item) => (
-                    <Link key={item.href} href={item.href} className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                      <item.icon className="h-5 w-5 mr-2 text-indigo-600" />
-                      {item.text}
-                    </Link>
+                  {menuItems.map((item, index) => (
+                    <motion.div
+                      key={item.href}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 * (index + 2) }}
+                    >
+                      <Link href={item.href} className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
+                        <item.icon className="h-5 w-5 mr-2 text-indigo-600" />
+                        {item.text}
+                      </Link>
+                    </motion.div>
                   ))}
-                  <button onClick={handleLogout} className="w-full flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg transition duration-300">
-                    <LogOut className="h-5 w-5 mr-2" />
-                    ログアウト
-                  </button>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * (menuItems.length + 2) }}
+                  >
+                    <button onClick={handleLogout} className="w-full flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg transition duration-300">
+                      <LogOut className="h-5 w-5 mr-2" />
+                      ログアウト
+                    </button>
+                  </motion.div>
                 </>
               ) : (
                 <>
-                  <Link href="/login" className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6 py-2 rounded-lg text-center transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                    ログイン
-                  </Link>
-                  <Link href="/signup" className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-2 rounded-lg text-center transition duration-300" onClick={() => setIsMenuOpen(false)}>
-                    サインアップ
-                  </Link>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <Link href="/login" className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6 py-2 rounded-lg text-center transition duration-300 block" onClick={() => setIsMenuOpen(false)}>
+                      ログイン
+                    </Link>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <Link href="/signup" className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-2 rounded-lg text-center transition duration-300 block" onClick={() => setIsMenuOpen(false)}>
+                      サインアップ
+                    </Link>
+                  </motion.div>
                 </>
               )}
             </div>
