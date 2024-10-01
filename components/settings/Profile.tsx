@@ -4,6 +4,7 @@ import React, { useState, useTransition, useCallback } from "react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   Form,
   FormControl,
@@ -15,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Camera, User, FileText, CheckCircle } from "lucide-react"
+import { Camera, User, FileText, CheckCircle, Loader2 } from "lucide-react"
 import { ProfileSchema } from "@/schemas"
 import { updateProfile } from "@/actions/user"
 import { useRouter } from "next/navigation"
@@ -104,13 +105,23 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
   }, [])
 
   return (
-    <div className="min-h-screen pt-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen pt-6"
+    >
       <div className="max-w-2xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
           プロフィール編集
         </h1>
 
-        <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+          className="mb-8"
+        >
           <ImageUploading
             value={imageUpload}
             onChange={onChangeImage}
@@ -119,21 +130,24 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
           >
             {({ imageList, onImageUpload, onImageUpdate, dragProps }) => (
               <div className="flex flex-col items-center justify-center">
-                {imageList.length == 0 ? (
-                  <button
+                {imageList.length === 0 ? (
+                  <motion.button
                     className="w-40 h-40 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white overflow-hidden relative group transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95"
                     onClick={(e) => {
                       e.preventDefault()
                       onImageUpload()
                     }}
                     {...dragProps}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     <Camera size={40} className="z-10" />
                     <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-200" />
-                  </button>
+                  </motion.button>
                 ) : (
-                  <div
+                  <motion.div
                     className="w-40 h-40 relative rounded-full overflow-hidden border-4 border-indigo-500 group transition-transform duration-200 ease-in-out hover:scale-105"
+                    whileHover={{ scale: 1.05 }}
                   >
                     <Image
                       fill
@@ -143,8 +157,10 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
                       priority
                       sizes="(max-width: 768px) 160px, 200px"
                     />
-                    <div
+                    <motion.div
                       className="absolute inset-0 bg-black opacity-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-70"
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 0.7 }}
                     >
                       <Button
                         variant="ghost"
@@ -156,80 +172,108 @@ const Profile: React.FC<ProfileProps> = ({ profile }) => {
                       >
                         画像を変更
                       </Button>
-                    </div>
-                  </div>
+                    </motion.div>
+                  </motion.div>
                 )}
               </div>
             )}
           </ImageUploading>
-        </div>
+        </motion.div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg font-bold flex items-center text-indigo-600">
-                    <User className="mr-2" size={24} /> 名前
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="田中太郎"
-                      {...field}
-                      disabled={isPending}
-                      className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
+            >
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-bold flex items-center text-indigo-600">
+                      <User className="mr-2" size={24} /> 名前
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="田中太郎"
+                        {...field}
+                        disabled={isPending}
+                        className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </motion.div>
 
-            <FormField
-              control={form.control}
-              name="introduce"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg font-bold flex items-center text-indigo-600">
-                    <FileText className="mr-2" size={24} /> 自己紹介
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="よろしくお願いします。"
-                      rows={8}
-                      {...field}
-                      disabled={isPending}
-                      className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.3 }}
+            >
+              <FormField
+                control={form.control}
+                name="introduce"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-bold flex items-center text-indigo-600">
+                      <FileText className="mr-2" size={24} /> 自己紹介
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="よろしくお願いします。"
+                        rows={8}
+                        {...field}
+                        disabled={isPending}
+                        className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </motion.div>
 
             <div className="space-y-4 w-full">
-              {error && <FormError message={error} />}
-
-              <Button
-                type="submit"
-                className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
-                disabled={isPending}
-              >
-                {isPending ? (
-                  <span className="animate-spin">&#8987;</span>
-                ) : isSuccess ? (
-                  <CheckCircle className="text-green-400" size={24} />
-                ) : (
-                  <span>変更を保存</span>
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <FormError message={error} />
+                  </motion.div>
                 )}
-              </Button>
+              </AnimatePresence>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  type="submit"
+                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                  disabled={isPending}
+                >
+                  {isPending ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : isSuccess ? (
+                    <CheckCircle className="text-green-400" size={24} />
+                  ) : (
+                    <span>変更を保存</span>
+                  )}
+                </Button>
+              </motion.div>
             </div>
           </form>
         </Form>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
