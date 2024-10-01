@@ -5,8 +5,8 @@ import { createClient } from "@/utils/supabase/client"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
-import { useState, useEffect } from "react"
-import { LogOut, Home, Users, Menu, X, PenTool, Settings, Shield } from "lucide-react"
+import { useState } from "react"
+import { LogOut, Home, Menu, X, PenTool, Settings, Shield } from "lucide-react"
 
 interface NavigationProps {
   user: User | null
@@ -16,7 +16,6 @@ const Navigation = ({ user }: NavigationProps) => {
   const router = useRouter()
   const supabase = createClient()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [userCount, setUserCount] = useState<number>(0)
 
   const handleLogout = async () => {
     if (!window.confirm("ログアウトしますが、よろしいですか？")) {
@@ -27,29 +26,6 @@ const Navigation = ({ user }: NavigationProps) => {
     router.push("/login")
     router.refresh()
   }
-
-  useEffect(() => {
-    const fetchUserCount = async () => {
-      const { count } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-      
-      setUserCount(count || 0)
-    }
-
-    fetchUserCount()
-
-    const subscription = supabase
-      .channel('profiles')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        fetchUserCount()
-      })
-      .subscribe()
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
 
   const menuItems = [
     { href: "/", icon: Home, text: "ホーム" },
@@ -69,23 +45,6 @@ const Navigation = ({ user }: NavigationProps) => {
             <Link href="/" className="text-3xl font-extrabold text-indigo-600 hover:text-indigo-700 transition duration-300">
               Void Pulse
             </Link>
-          </motion.div>
-
-          <motion.div
-            className="flex items-center text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Users className="h-5 w-5 mr-2 text-indigo-600" />
-            <motion.span
-              className="font-bold"
-              initial={{ scale: 1 }}
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
-            >
-              {userCount}
-            </motion.span> ユーザー
           </motion.div>
 
           <motion.button
