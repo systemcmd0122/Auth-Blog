@@ -31,13 +31,9 @@ const ProfilePage = async () => {
   }
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-100"> {/* Added padding-top and min-height */}
-      <div className="container mx-auto px-4 py-8">
-        <Suspense fallback={<Loading />}>
-          <Profile profile={profile} />
-        </Suspense>
-      </div>
-    </div>
+    <Suspense fallback={<Loading />}>
+      <Profile profile={profile} />
+    </Suspense>
   )
 }
 
