@@ -65,25 +65,23 @@ const Navigation = ({ user }: NavigationProps) => {
             Void Pulse
           </Link>
 
-          <div className="flex items-center space-x-4">
-            <motion.div
-              className="flex items-center text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Users className="h-5 w-5 mr-2 text-indigo-600" />
-              <span className="font-bold">{userCount}</span> ユーザー
-            </motion.div>
+          <motion.div
+            className="flex items-center text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Users className="h-5 w-5 mr-2 text-indigo-600" />
+            <span className="font-bold">{userCount}</span> ユーザー
+          </motion.div>
 
-            <button
-              className="bg-gray-100 text-gray-700 hover:bg-gray-200 p-2 rounded-lg transition duration-300"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
+          <button
+            className="bg-gray-100 text-gray-700 hover:bg-gray-200 p-2 rounded-lg transition duration-300"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
       </div>
 
@@ -109,10 +107,6 @@ const Navigation = ({ user }: NavigationProps) => {
               </button>
             </div>
             <div className="flex flex-col p-4 space-y-4 overflow-y-auto">
-              <div className="text-lg font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-lg flex items-center justify-center">
-                <Users className="h-5 w-5 mr-2 text-indigo-600" />
-                <span className="font-bold">{userCount}</span> ユーザー
-              </div>
               <Link href="/privacy-policy" className="flex items-center justify-center bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition duration-300" onClick={() => setIsMenuOpen(false)}>
                 <Shield className="h-5 w-5 mr-2 text-indigo-600" />
                 プライバシーポリシー
