@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { BlogType } from "@/types";
 import { User } from "@supabase/auth-helpers-nextjs";
 import { format } from "date-fns";
-import { FilePenLine, Loader2, Trash2, Calendar, UserIcon, Copy, Check } from "lucide-react";
+import { FilePenLine, Loader2, Trash2, Calendar, UserIcon, Bookmark, BookmarkCheck, Copy, Check } from "lucide-react";
 import { deleteBlog } from "@/actions/blog";
 import FormError from "@/components/auth/FormError";
 import Image from "next/image";
@@ -30,8 +30,8 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog, currentUser }) 
   const router = useRouter();
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [isBookmarked, setIsBookmarked] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [imageErrors, setImageErrors] = useState<{ [key: number]: string }>({});
 
   const handleDelete = async () => {
     if (!window.confirm("本当に削除しますか？")) {
@@ -63,6 +63,16 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog, currentUser }) 
     });
   };
 
+  const toggleBookmark = () => {
+    setIsBookmarked(!isBookmarked);
+    if (!isBookmarked) {
+      toast.success("ブログをブックマークしました");
+    } else {
+      toast.success("ブックマークを解除しました");
+    }
+    // ここで実際のブックマーク処理を実装する（例：APIリクエストなど）
+  };
+
   const copyToClipboard = (text: string, index: number) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedIndex(index);
@@ -70,12 +80,8 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog, currentUser }) 
     });
   };
 
-  const handleImageError = (index: number) => {
-    setImageErrors(prev => ({ ...prev, [index]: "画像の読み込みに失敗しました" }));
-  };
-
   const renderFormattedContent = (content: string) => {
-    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~|\!\[[\s\S]*?\]\([\s\S]*?\))/);
+    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~)/);
     return parts.map((part, index) => {
       if (part.startsWith('```') && part.endsWith('```')) {
         const code = part.slice(3, -3);
@@ -107,24 +113,6 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog, currentUser }) 
         return <span key={index} style={{ fontSize: size }}>{text}</span>;
       } else if (part.startsWith('~~') && part.endsWith('~~')) {
         return <del key={index} className="line-through">{part.slice(2, -2)}</del>;
-      } else if (part.startsWith('![') && part.endsWith(')')) {
-        const [altText, url] = part.slice(2, -1).split("](");
-        return (
-          <div key={index} className="my-4 relative">
-            <Image
-              src={url}
-              alt={altText}
-              width={500}
-              height={300}
-              layout="responsive"
-              objectFit="cover"
-              onError={() => handleImageError(index)}
-            />
-            {imageErrors[index] && (
-              <p className="text-red-500 text-sm mt-1">{imageErrors[index]}</p>
-            )}
-          </div>
-        );
       }
       return <span key={index}>{part}</span>;
     });
@@ -197,6 +185,19 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog, currentUser }) 
                 </>
               )}
             </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`${isBookmarked ? 'bg-yellow-500' : 'bg-gray-500'} text-white px-4 py-2 rounded-full flex items-center space-x-2`}
+              onClick={toggleBookmark}
+            >
+              {isBookmarked ? (
+                <BookmarkCheck className="w-4 h-4" />
+              ) : (
+                <Bookmark className="w-4 h-4" />
+              )}
+              <span>{isBookmarked ? 'ブックマーク済み' : 'ブックマーク'}</span>
+            </motion.button>
           </div>
 
           <FormError message={error} />
