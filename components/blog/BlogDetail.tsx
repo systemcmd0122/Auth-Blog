@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { BlogType } from "@/types";
 import { User } from "@supabase/auth-helpers-nextjs";
 import { format } from "date-fns";
-import { FilePenLine, Loader2, Trash2, Calendar, UserIcon, Bookmark, BookmarkCheck, Copy, Check } from "lucide-react";
+import { FilePenLine, Loader2, Trash2, Calendar, UserIcon, Bookmark, BookmarkCheck, Copy, Check, Info } from "lucide-react";
 import { deleteBlog } from "@/actions/blog";
 import FormError from "@/components/auth/FormError";
 import Image from "next/image";
@@ -81,38 +81,46 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog, currentUser }) 
   };
 
   const renderFormattedContent = (content: string) => {
-    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~)/);
+    const parts = content.split(/(<[a-z]+>[\s\S]*?<\/[a-z]+>)/);
     return parts.map((part, index) => {
-      if (part.startsWith('```') && part.endsWith('```')) {
-        const code = part.slice(3, -3);
-        return (
-          <div key={index} className="relative bg-gray-800 text-white p-4 rounded-md my-4 overflow-x-auto">
-            <pre className="whitespace-pre-wrap break-words text-sm">{code}</pre>
-            <button
-              onClick={() => copyToClipboard(code, index)}
-              className="absolute top-2 right-2 p-2 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"
-            >
-              {copiedIndex === index ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-            </button>
-          </div>
-        );
-      } else if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={index} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>;
-      } else if (part.startsWith('__') && part.endsWith('__')) {
-        return <span key={index} className="border-b-2 border-gray-500">{part.slice(2, -2)}</span>;
-      } else if (part.startsWith('==') && part.endsWith('==')) {
-        return <mark key={index} className="bg-yellow-200 px-1 rounded">{part.slice(2, -2)}</mark>;
-      } else if (part.match(/\[[\s\S]*?\]\([\s\S]*?\)/)) {
-        const [text, url] = part.slice(1, -1).split("](");
-        return <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">{text}</a>;
-      } else if (part.startsWith('<color:#') && part.endsWith('</color>')) {
-        const [color, text] = part.slice(7, -8).split('>');
-        return <span key={index} style={{ color }}>{text}</span>;
-      } else if (part.startsWith('<size:') && part.endsWith('</size>')) {
-        const [size, text] = part.slice(6, -7).split('>');
-        return <span key={index} style={{ fontSize: size }}>{text}</span>;
-      } else if (part.startsWith('~~') && part.endsWith('~~')) {
-        return <del key={index} className="line-through">{part.slice(2, -2)}</del>;
+      if (part.match(/<([a-z]+)>([\s\S]*?)<\/\1>/)) {
+        const [, tag, text] = part.match(/<([a-z]+)>([\s\S]*?)<\/\1>/);
+        switch (tag) {
+          case 'code':
+            return (
+              <div key={index} className="relative bg-gray-800 text-white p-4 rounded-md my-4 overflow-x-auto">
+                <pre className="whitespace-pre-wrap break-words text-sm">{text}</pre>
+                <button
+                  onClick={() => copyToClipboard(text, index)}
+                  className="absolute top-2 right-2 p-2 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"
+                >
+                  {copiedIndex === index ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            );
+          case 'bold':
+            return <strong key={index} className="font-bold text-gray-900">{text}</strong>;
+          case 'underline':
+            return <span key={index} className="border-b-2 border-gray-500">{text}</span>;
+          case 'highlight':
+            return <mark key={index} className="bg-yellow-200 px-1 rounded">{text}</mark>;
+          case 'link':
+            const [linkText, url] = text.split('|');
+            return <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">{linkText}</a>;
+          case 'color':
+            const [color, colorText] = text.split('|');
+            return <span key={index} style={{ color }}>{colorText}</span>;
+          case 'size':
+            const [size, sizeText] = text.split('|');
+            return <span key={index} style={{ fontSize: size }}>{sizeText}</span>;
+          case 'strikethrough':
+            return <del key={index} className="line-through">{text}</del>;
+          case 'image':
+            const [alt, src] = text.split('|');
+            return <img key={index} src={src} alt={alt} className="max-w-full h-auto my-4 rounded-lg shadow-lg" />;
+          default:
+            return <span key={index}>{part}</span>;
+        }
       }
       return <span key={index}>{part}</span>;
     });
@@ -218,6 +226,24 @@ const BlogDetail: React.FC<BlogDetailProps> = ({ blog, isMyBlog, currentUser }) 
             <p className="text-gray-600">{blog.profiles.introduce || "自己紹介はありません"}</p>
           </div>
         </div>
+      </div>
+
+      <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+        <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+          <Info className="mr-2 text-blue-500" />
+          テキスト装飾ガイド
+        </h3>
+        <ul className="space-y-2 text-gray-700">
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;code&gt;コード&lt;/code&gt;</code> コードブロック（コピー可能）</li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;bold&gt;太字&lt;/bold&gt;</code> <strong className="font-bold">太字</strong></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;underline&gt;下線&lt;/underline&gt;</code> <span className="border-b-2 border-gray-500">下線</span></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;highlight&gt;ハイライト&lt;/highlight&gt;</code> <mark className="bg-yellow-200 px-1 rounded">ハイライト</mark></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;link&gt;テキスト|URL&lt;/link&gt;</code> <a href="#" className="text-blue-600 hover:text-blue-800 underline">ハイパーリンク</a></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;color&gt;#FF0000|色付きテキスト&lt;/color&gt;</code> <span style={{ color: '#FF0000' }}>色付きテキスト</span></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;size&gt;20px|サイズ変更&lt;/size&gt;</code> <span style={{ fontSize: '20px' }}>サイズ変更</span></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;strikethrough&gt;取り消し線&lt;/strikethrough&gt;</code> <del className="line-through">取り消し線</del></li>
+          <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;image&gt;代替テキスト|画像URL&lt;/image&gt;</code> 画像埋め込み</li>
+        </ul>
       </div>
 
       <Comments blogId={blog.id} currentUser={currentUser} />
