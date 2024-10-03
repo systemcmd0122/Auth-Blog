@@ -25,7 +25,7 @@ const MainPage = () => {
             avatar_url
           )
         `)
-        .order("updated_at", { ascending: false })
+        .order("created_at", { ascending: false })  // この行を変更
 
       if (error) {
         console.error("Error fetching blogs:", error)
