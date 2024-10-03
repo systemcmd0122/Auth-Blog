@@ -36,7 +36,6 @@ const BlogNew: React.FC<BlogNewProps> = ({ userId }) => {
   const [imageUpload, setImageUpload] = useState<ImageListType>([]);
   const [previewContent, setPreviewContent] = useState("");
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [imageErrors, setImageErrors] = useState<{ [key: number]: string }>({});
 
   const form = useForm<z.infer<typeof BlogSchema>>({
     resolver: zodResolver(BlogSchema),
@@ -97,13 +96,8 @@ const BlogNew: React.FC<BlogNewProps> = ({ userId }) => {
     });
   };
 
-  const handleImageError = (index: number) => {
-    setImageErrors(prev => ({ ...prev, [index]: "画像の読み込みに失敗しました" }));
-  };
-
   const renderFormattedContent = (content: string) => {
-    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~|\!\[[\s\S]*?\]\([\s\S]*?\)|\n)/);
-    
+    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~|\n)/);
     return parts.map((part, index) => {
       if (part === '\n') {
         return <br key={index} />;
@@ -137,24 +131,6 @@ const BlogNew: React.FC<BlogNewProps> = ({ userId }) => {
         return <span key={index} style={{ fontSize: size }}>{text}</span>;
       } else if (part.startsWith('~~') && part.endsWith('~~')) {
         return <del key={index} className="line-through">{part.slice(2, -2)}</del>;
-      } else if (part.startsWith('![') && part.endsWith(')')) {
-        const [altText, url] = part.slice(2, -1).split("](");
-        return (
-          <div key={index} className="my-4 relative">
-            <Image
-              src={url}
-              alt={altText}
-              width={500}
-              height={300}
-              layout="responsive"
-              objectFit="cover"
-              onError={() => handleImageError(index)}
-            />
-            {imageErrors[index] && (
-              <p className="text-red-500 text-sm mt-1">{imageErrors[index]}</p>
-            )}
-          </div>
-        );
       }
       return <span key={index}>{part}</span>;
     });
@@ -294,86 +270,32 @@ const BlogNew: React.FC<BlogNewProps> = ({ userId }) => {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6">
-  <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
-    <Info className="mr-2 text-blue-500" />
-    テキスト装飾ガイド
-  </h3>
-  <ul className="space-y-2 text-gray-700">
-    <li className="flex items-center">
-      <code className="bg-gray-100 px-2 py-1 rounded mr-2">```code```</code> 
-      コードブロック（コピー可能）
-    </li>
-    <li className="flex items-center">
-      <code className="bg-gray-100 px-2 py-1 rounded mr-2">**text**</code> 
-      <strong className="font-bold">太字</strong>
-    </li>
-    <li className="flex items-center">
-      <code className="bg-gray-100 px-2 py-1 rounded mr-2">__text__</code> 
-      <span className="border-b-2 border-gray-500">下線</span>
-    </li>
-    <li className="flex items-center">
-      <code className="bg-gray-100 px-2 py-1 rounded mr-2">==text==</code> 
-      <mark className="bg-yellow-200 px-1 rounded">ハイライト</mark>
-    </li>
-    <li className="flex items-center">
-      <code className="bg-gray-100 px-2 py-1 rounded mr-2">[リンク](URL)</code> 
-      <a href="#" className="text-blue-600 hover:text-blue-800 underline">ハイパーリンク</a>
-    </li>
-    <li className="flex items-center">
-      <code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;color:#FF0000&gt;text&lt;/color&gt;</code> 
-      <span style={{ color: '#FF0000' }}>色付きテキスト</span>
-    </li>
-    <li className="flex items-center">
-      <code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;size:20px&gt;text&lt;/size&gt;</code> 
-      <span style={{ fontSize: '20px' }}>サイズ変更</span>
-    </li>
-    <li className="flex items-center">
-      <code className="bg-gray-100 px-2 py-1 rounded mr-2">~~text~~</code> 
-      <del className="line-through">取り消し線</del>
-    </li>
-    <li className="flex items-center">
-      <code className="bg-gray-100 px-2 py-1 rounded mr-2">![代替テキスト](画像URL)</code> 
-      画像の挿入
-    </li>
-  </ul>
-  
-  <div className="mt-6">
-    <h4 className="font-semibold mb-2">使用例：</h4>
-    <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
-      <div>
-        <p className="text-sm text-gray-600 mb-1">テキスト装飾の組み合わせ：</p>
-        <code className="text-sm bg-gray-100 p-2 rounded block">
-          **重要な__通知__です** 
-          ==注目してください==
-        </code>
-      </div>
-      <div>
-        <p className="text-sm text-gray-600 mb-1">カラーとサイズの組み合わせ：</p>
-        <code className="text-sm bg-gray-100 p-2 rounded block">
-          &lt;color:#FF0000&gt;&lt;size:18px&gt;重要なお知らせ&lt;/size&gt;&lt;/color&gt;
-        </code>
-      </div>
-      <div>
-        <p className="text-sm text-gray-600 mb-1">画像の挿入例：</p>
-        <code className="text-sm bg-gray-100 p-2 rounded block">
-          ![プロフィール画像](https://example.com/image.jpg)
-        </code>
-      </div>
-    </div>
-  </div>
-
-  <div className="mt-4">
-    <h4 className="font-semibold mb-2">カラーコード例：</h4>
-    <div className="flex flex-wrap gap-2">
-      {['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'].map((color) => (
-        <div key={color} className="flex items-center">
-          <div className="w-6 h-6 rounded mr-1" style={{ backgroundColor: color }}></div>
-          <code className="text-sm">{color}</code>
+          <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+            <Info className="mr-2 text-blue-500" />
+            テキスト装飾ガイド
+          </h3>
+          <ul className="space-y-2 text-gray-700">
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">```code```</code> コードブロック（コピー可能）</li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">**text**</code> <strong className="font-bold">太字</strong></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">__text__</code> <span className="border-b-2 border-gray-500">下線</span></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">==text==</code> <mark className="bg-yellow-200 px-1 rounded">ハイライト</mark></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">[リンク](URL)</code> <a href="#" className="text-blue-600 hover:text-blue-800 underline">ハイパーリンク</a></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;color:#FF0000&gt;text&lt;/color&gt;</code> <span style={{ color: '#FF0000' }}>色付きテキスト</span></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;size:20px&gt;text&lt;/size&gt;</code> <span style={{ fontSize: '20px' }}>サイズ変更</span></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">~~text~~</code> <del className="line-through">取り消し線</del></li>
+          </ul>
+          <div className="mt-4">
+            <h4 className="font-semibold mb-2">カラーコード例：</h4>
+            <div className="flex flex-wrap gap-2">
+              {['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'].map((color) => (
+                <div key={color} className="flex items-center">
+                  <div className="w-6 h-6 rounded mr-1" style={{ backgroundColor: color }}></div>
+                  <code className="text-sm">{color}</code>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      ))}
-    </div>
-  </div>
-</div>
       </div>
     </motion.div>
   );
