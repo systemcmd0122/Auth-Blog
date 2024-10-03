@@ -134,6 +134,7 @@ export const editBlog = async (values: editBlogProps) => {
         title: values.title,
         content: values.content,
         image_url,
+        updated_at: new Date().toISOString(), // 更新日時のみを設定
       })
       .eq("id", values.blogId)
 
