@@ -106,9 +106,9 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
     });
   };
 
-  const renderFormattedContent = (content: string) => {
-    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~|<image>[\s\S]*?<\/image>|\n)/);
-    return parts.map((part, index) => {
+const renderFormattedContent = (content: string) => {
+  const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~|<image>[\s\S]*?<\/image>|\n)/);
+  return parts.map((part, index) => {
       if (part === '\n') {
         return <br key={index} />;
       } else if (part.startsWith('```') && part.endsWith('```')) {
@@ -142,16 +142,21 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
       } else if (part.startsWith('~~') && part.endsWith('~~')) {
         return <del key={index} className="line-through">{part.slice(2, -2)}</del>;
       } else if (part.startsWith('<image>') && part.endsWith('</image>')) {
-        const imageUrl = part.slice(7, -8);
-        return (
+      const imageUrl = part.slice(7, -8).trim();
+      return (
+        <div key={index} className="my-4">
           <Image
-            key={index}
             src={imageUrl}
             alt="Embedded image"
             width={500}
             height={300}
             layout="responsive"
-            className="rounded-lg my-4"
+            className="rounded-lg"
+            onError={(e) => {
+              const imgElement = e.target as HTMLImageElement;
+              imgElement.src = "/noImage.png";
+              imgElement.alt = "Image failed to load";
+            }}
           />
         );
       }
