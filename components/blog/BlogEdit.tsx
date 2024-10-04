@@ -107,7 +107,7 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
   };
 
   const renderFormattedContent = (content: string) => {
-    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~|\n)/);
+    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~|<image>[\s\S]*?<\/image>|\n)/);
     return parts.map((part, index) => {
       if (part === '\n') {
         return <br key={index} />;
@@ -141,6 +141,19 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
         return <span key={index} style={{ fontSize: size }}>{text}</span>;
       } else if (part.startsWith('~~') && part.endsWith('~~')) {
         return <del key={index} className="line-through">{part.slice(2, -2)}</del>;
+      } else if (part.startsWith('<image>') && part.endsWith('</image>')) {
+        const imageUrl = part.slice(7, -8);
+        return (
+          <Image
+            key={index}
+            src={imageUrl}
+            alt="Embedded image"
+            width={500}
+            height={300}
+            layout="responsive"
+            className="rounded-lg my-4"
+          />
+        );
       }
       return <span key={index}>{part}</span>;
     });
