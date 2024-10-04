@@ -118,8 +118,10 @@ const renderFormattedContent = (content: string) => {
               imgElement.src = "/noImage.png";
               imgElement.alt = "Image failed to load";
             }}
-        );
-      }
+          />
+        </div>
+      );
+    }
       return <span key={index}>{part}</span>;
     });
   };
