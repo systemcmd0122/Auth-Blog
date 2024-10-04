@@ -97,7 +97,7 @@ const BlogNew: React.FC<BlogNewProps> = ({ userId }) => {
   };
 
   const renderFormattedContent = (content: string) => {
-    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~|\n)/);
+    const parts = content.split(/(\`\`\`[\s\S]*?\`\`\`|\*\*[\s\S]*?\*\*|__[\s\S]*?__|==[\s\S]*?==|\[[\s\S]*?\]\([\s\S]*?\)|<color:#[0-9A-Fa-f]{6}>[\s\S]*?<\/color>|<size:[\s\S]*?>[\s\S]*?<\/size>|~~[\s\S]*?~~|<image>[\s\S]*?<\/image>|\n)/);
     return parts.map((part, index) => {
       if (part === '\n') {
         return <br key={index} />;
@@ -131,6 +131,19 @@ const BlogNew: React.FC<BlogNewProps> = ({ userId }) => {
         return <span key={index} style={{ fontSize: size }}>{text}</span>;
       } else if (part.startsWith('~~') && part.endsWith('~~')) {
         return <del key={index} className="line-through">{part.slice(2, -2)}</del>;
+      } else if (part.startsWith('<image>') && part.endsWith('</image>')) {
+        const imageUrl = part.slice(7, -8);
+        return (
+          <Image
+            key={index}
+            src={imageUrl}
+            alt="Embedded image"
+            width={500}
+            height={300}
+            layout="responsive"
+            className="rounded-lg my-4"
+          />
+        );
       }
       return <span key={index}>{part}</span>;
     });
@@ -283,6 +296,7 @@ const BlogNew: React.FC<BlogNewProps> = ({ userId }) => {
             <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;color:#FF0000&gt;text&lt;/color&gt;</code> <span style={{ color: '#FF0000' }}>色付きテキスト</span></li>
             <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;size:20px&gt;text&lt;/size&gt;</code> <span style={{ fontSize: '20px' }}>サイズ変更</span></li>
             <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">~~text~~</code> <del className="line-through">取り消し線</del></li>
+            <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">&lt;image&gt;URL&lt;/image&gt;</code> 画像の埋め込み</li>
           </ul>
           <div className="mt-4">
             <h4 className="font-semibold mb-2">カラーコード例：</h4>
