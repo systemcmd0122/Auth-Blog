@@ -4,14 +4,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { format } from 'date-fns';
-import { Send, Trash2, ChevronDown, ChevronUp, CornerDownRight, MessageCircle, ExternalLink } from 'lucide-react';
+import { Send, Trash2, ChevronDown, ChevronUp, CornerDownRight, MessageCircle, Image, Youtube } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import Linkify from 'react-linkify';
-import * as linkify from 'linkifyjs';
-import { extract } from 'oembed-parser';
 import ReactPlayer from 'react-player';
-import Image from 'next/image';
+import Lightbox from 'react-image-lightbox';
+import 'react-image-lightbox/style.css';
 
 interface CommentType {
   id: string;
@@ -38,65 +36,9 @@ interface CommentsProps {
   currentUser: User | null;
 }
 
-interface LinkPreviewProps {
-  url: string;
-}
-
-interface PreviewData {
-  type?: string;
-  url?: string;
-  title?: string;
-  description?: string;
-}
-
 const REPLY_PREFIX = '@reply:';
+const MAX_REPLY_DEPTH = 3;
 const REPLIES_THRESHOLD = 3;
-const MAX_DEPTH = 5;
-
-const LinkPreview: React.FC<LinkPreviewProps> = ({ url }) => {
-  const [preview, setPreview] = useState<PreviewData | null>(null);
-
-  useEffect(() => {
-    const fetchPreview = async () => {
-      try {
-        const data = await extract(url);
-        setPreview(data);
-      } catch (error) {
-        console.error('Error fetching link preview:', error);
-      }
-    };
-
-    fetchPreview();
-  }, [url]);
-
-  if (!preview) return null;
-
-  if (preview.type === 'photo') {
-    return (
-      <Image
-        src={preview.url || ''}
-        alt={preview.title || ''}
-        width={300}
-        height={200}
-        className="max-w-full h-auto rounded-lg shadow-md"
-      />
-    );
-  }
-
-  if (preview.type === 'video' && ReactPlayer.canPlay(url)) {
-    return <ReactPlayer url={url} width="100%" height="240px" controls />;
-  }
-
-  return (
-    <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-      <h4 className="font-bold">{preview.title}</h4>
-      <p className="text-sm text-gray-600">{preview.description}</p>
-      <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-        {url} <ExternalLink className="inline w-4 h-4" />
-      </a>
-    </div>
-  );
-};
 
 const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
   const [comments, setComments] = useState<ProcessedCommentType[]>([]);
@@ -104,6 +46,8 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [collapsedComments, setCollapsedComments] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(-1);
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
   const supabase = createClient();
 
   const fetchComments = useCallback(async () => {
@@ -142,7 +86,7 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchComments, supabase]);
+  }, [blogId, supabase, fetchComments]);
 
   const processComments = (rawComments: CommentType[]): ProcessedCommentType[] => {
     const commentMap = new Map<string, ProcessedCommentType>();
@@ -163,8 +107,13 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
     commentMap.forEach(comment => {
       if (comment.replyTo && commentMap.has(comment.replyTo)) {
         const parentComment = commentMap.get(comment.replyTo)!;
-        parentComment.replies!.push(comment);
-        comment.level = Math.min(parentComment.level + 1, MAX_DEPTH);
+        if (parentComment.level < MAX_REPLY_DEPTH - 1) {
+          parentComment.replies!.push(comment);
+          comment.level = parentComment.level + 1;
+        } else {
+          comment.level = 0;
+          rootComments.push(comment);
+        }
       } else {
         rootComments.push(comment);
       }
@@ -241,12 +190,48 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
     });
   };
 
+  const renderUrlPreview = (url: string) => {
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    const extension = url.split('.').pop()?.toLowerCase();
+
+    if (imageExtensions.includes(extension || '')) {
+      return (
+        <div className="mt-2">
+          <img
+            src={url}
+            alt="Attached"
+            className="max-w-full h-auto rounded-lg cursor-pointer"
+            onClick={() => {
+              setLightboxImages([url]);
+              setLightboxIndex(0);
+            }}
+          />
+        </div>
+      );
+    } else if (ReactPlayer.canPlay(url)) {
+      return (
+        <div className="mt-2">
+          <ReactPlayer url={url} width="100%" height="200px" controls />
+        </div>
+      );
+    } else {
+      return (
+        <div className="mt-2 p-2 bg-gray-100 rounded-lg">
+          <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+            {url}
+          </a>
+        </div>
+      );
+    }
+  };
+
   const renderComment = (comment: ProcessedCommentType) => {
     const isCollapsed = collapsedComments.has(comment.id);
     const hasReplies = comment.replies && comment.replies.length > 0;
     const showToggle = hasReplies && comment.replies!.length > REPLIES_THRESHOLD;
 
-    const urls = linkify.find(comment.content).filter(link => link.type === 'url').map(link => link.href);
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const urls = comment.content.match(urlRegex) || [];
 
     return (
       <motion.div
@@ -255,17 +240,15 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3 }}
-        className={`ml-${Math.min(comment.level * 4, 16)} mt-4`}
+        className={`ml-${comment.level * 4} mt-4`}
       >
         <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
-              <Image
+              <img
                 src={comment.profiles.avatar_url || '/noImage.png'}
                 alt={`${comment.profiles.name}'s avatar`}
-                width={40}
-                height={40}
-                className="rounded-full border-2 border-blue-500"
+                className="w-10 h-10 rounded-full border-2 border-blue-500"
               />
               <div>
                 <span className="font-semibold text-gray-800">{comment.profiles.name}</span>
@@ -275,23 +258,19 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
               </div>
             </div>
           </div>
-          <div className="flex items-start space-x-2 mb-2">
-            {comment.replyTo && (
-              <div className="flex items-center space-x-1 text-sm text-gray-500">
-                <CornerDownRight className="w-4 h-4" />
-                <span>返信先: {comment.replyTo}</span>
-              </div>
-            )}
-          </div>
+          {comment.replyTo && (
+            <div className="bg-gray-100 p-2 rounded-lg mb-2 text-sm text-gray-700">
+              <CornerDownRight className="w-4 h-4 text-gray-400 inline-block mr-1" />
+              返信先: {comment.replyTo}
+            </div>
+          )}
           <div className="mb-2">
-            <Linkify>
-              <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
-            </Linkify>
+            <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+            {urls.map((url, index) => (
+              <div key={index}>{renderUrlPreview(url)}</div>
+            ))}
           </div>
-          {urls.map((url, index) => (
-            <LinkPreview key={index} url={url} />
-          ))}
-          <div className="flex items-center space-x-4 text-sm mt-2">
+          <div className="flex items-center space-x-4 text-sm">
             <button
               onClick={() => toggleReply(comment.id)}
               className="text-blue-500 hover:text-blue-700 transition-colors duration-200 flex items-center space-x-1"
@@ -402,6 +381,20 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
       >
         {comments.map(comment => renderComment(comment))}
       </motion.div>
+      {lightboxIndex !== -1 && (
+        <Lightbox
+          mainSrc={lightboxImages[lightboxIndex]}
+          nextSrc={lightboxImages[(lightboxIndex + 1) % lightboxImages.length]}
+          prevSrc={lightboxImages[(lightboxIndex + lightboxImages.length - 1) % lightboxImages.length]}
+          onCloseRequest={() => setLightboxIndex(-1)}
+          onMovePrevRequest={() =>
+            setLightboxIndex((lightboxIndex + lightboxImages.length - 1) % lightboxImages.length)
+          }
+          onMoveNextRequest={() =>
+            setLightboxIndex((lightboxIndex + 1) % lightboxImages.length)
+          }
+        />
+      )}
     </div>
   );
 };
