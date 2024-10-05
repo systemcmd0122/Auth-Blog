@@ -1,15 +1,15 @@
 'use client'
 
-import React, { useState, useTransition, useEffect, useRef } from "react";
+import React, { useState, useTransition, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Info, Loader2, Upload, Copy, Check, Bold, Underline, FileCode, Link, Highlighter, Type, Strikethrough, Image as ImageIcon } from "lucide-react";
+import { Info, Loader2, Upload, Copy, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ImageUploading, { ImageListType } from "react-images-uploading";
 import toast from "react-hot-toast";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 import {
   Form,
@@ -36,10 +36,6 @@ const BlogNew: React.FC<BlogNewProps> = ({ userId }) => {
   const [imageUpload, setImageUpload] = useState<ImageListType>([]);
   const [previewContent, setPreviewContent] = useState("");
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [selectedText, setSelectedText] = useState({ text: "", start: 0, end: 0 });
-  const [showPopover, setShowPopover] = useState(false);
-  const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const form = useForm<z.infer<typeof BlogSchema>>({
     resolver: zodResolver(BlogSchema),
@@ -165,74 +161,6 @@ const BlogNew: React.FC<BlogNewProps> = ({ userId }) => {
     return () => subscription.unsubscribe();
   }, [form.watch]);
 
-  const handleTextSelection = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const selectedText = textarea.value.substring(start, end);
-      
-      if (selectedText) {
-        setSelectedText({ text: selectedText, start, end });
-        const rect = textarea.getBoundingClientRect();
-        const selectionRect = window.getSelection()?.getRangeAt(0).getBoundingClientRect();
-        
-        if (selectionRect) {
-          setPopoverPosition({
-            top: selectionRect.top - rect.top - 40,
-            left: selectionRect.left - rect.left,
-          });
-        }
-        
-        setShowPopover(true);
-      } else {
-        setShowPopover(false);
-      }
-    }
-  };
-
-  const applyDecoration = (decoration: string) => {
-    const { text, start, end } = selectedText;
-    const content = form.getValues("content");
-    let decoratedText = "";
-
-    switch (decoration) {
-      case "bold":
-        decoratedText = `**${text}**`;
-        break;
-      case "underline":
-        decoratedText = `__${text}__`;
-        break;
-      case "code":
-        decoratedText = `\`\`\`${text}\`\`\``;
-        break;
-      case "link":
-        decoratedText = `[${text}](URL)`;
-        break;
-      case "highlight":
-        decoratedText = `==${text}==`;
-        break;
-      case "color":
-        decoratedText = `<color:#FF0000>${text}</color>`;
-        break;
-      case "size":
-        decoratedText = `<size:20px>${text}</size>`;
-        break;
-      case "strikethrough":
-        decoratedText = `~~${text}~~`;
-        break;
-      case "image":
-        decoratedText = `<image>${text}</image>`;
-        break;
-      default:
-        decoratedText = text;
-    }
-
-    const newContent = content.substring(0, start) + decoratedText + content.substring(end);
-    form.setValue("content", newContent);
-    setShowPopover(false);
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -321,36 +249,12 @@ const BlogNew: React.FC<BlogNewProps> = ({ userId }) => {
                 <FormItem>
                   <FormLabel className="text-lg font-semibold">内容</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Textarea
-                        placeholder="ブログの内容を入力"
-                        {...field}
-                        disabled={isPending}
-                        className="w-full p-2 border rounded-md min-h-[300px]"
-                        ref={textareaRef}
-                        onMouseUp={handleTextSelection}
-                      />
-                      <AnimatePresence>
-                        {showPopover && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="absolute bg-white shadow-lg rounded-md p-2 flex space-x-2"
-                            style={{ top: popoverPosition.top, left: popoverPosition.left }}
-                          >
-                            <Button size="sm" variant="outline" onClick={() => applyDecoration("bold")}><Bold size={16} /></Button><Button size="sm" variant="outline" onClick={() => applyDecoration("underline")}><Underline size={16} /></Button>
-                            <Button size="sm" variant="outline" onClick={() => applyDecoration("code")}><FileCode size={16} /></Button>
-                            <Button size="sm" variant="outline" onClick={() => applyDecoration("link")}><Link size={16} /></Button>
-                            <Button size="sm" variant="outline" onClick={() => applyDecoration("highlight")}><Highlighter size={16} /></Button>
-                            <Button size="sm" variant="outline" onClick={() => applyDecoration("color")}><Type size={16} /></Button>
-                            <Button size="sm" variant="outline" onClick={() => applyDecoration("size")}><Type size={16} /></Button>
-                            <Button size="sm" variant="outline" onClick={() => applyDecoration("strikethrough")}><Strikethrough size={16} /></Button>
-                            <Button size="sm" variant="outline" onClick={() => applyDecoration("image")}><ImageIcon size={16} /></Button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                    <Textarea
+                      placeholder="ブログの内容を入力"
+                      {...field}
+                      disabled={isPending}
+                      className="w-full p-2 border rounded-md min-h-[300px]"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
