@@ -1,12 +1,16 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { format } from 'date-fns';
-import { Send, Trash2, ChevronDown, ChevronUp, CornerDownRight, MessageCircle } from 'lucide-react';
+import { Send, Trash2, ChevronDown, ChevronUp, CornerDownRight, MessageCircle, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import Linkify from 'react-linkify';
+import linkify from 'linkifyjs';
+import { extract } from 'oembed-parser';
+import ReactPlayer from 'react-player';
 
 interface CommentType {
   id: string;
@@ -33,8 +37,50 @@ interface CommentsProps {
   currentUser: User | null;
 }
 
+interface LinkPreviewProps {
+  url: string;
+}
+
 const REPLY_PREFIX = '@reply:';
-const REPLIES_THRESHOLD = 3; // 返信の表示/非表示を切り替える閾値
+const REPLIES_THRESHOLD = 3;
+const MAX_DEPTH = 5;
+
+const LinkPreview: React.FC<LinkPreviewProps> = ({ url }) => {
+  const [preview, setPreview] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPreview = async () => {
+      try {
+        const data = await extract(url);
+        setPreview(data);
+      } catch (error) {
+        console.error('Error fetching link preview:', error);
+      }
+    };
+
+    fetchPreview();
+  }, [url]);
+
+  if (!preview) return null;
+
+  if (preview.type === 'photo') {
+    return <img src={preview.url} alt={preview.title} className="max-w-full h-auto rounded-lg shadow-md" />;
+  }
+
+  if (preview.type === 'video' && ReactPlayer.canPlay(url)) {
+    return <ReactPlayer url={url} width="100%" height="240px" controls />;
+  }
+
+  return (
+    <div className="bg-gray-100 p-4 rounded-lg shadow-md">
+      <h4 className="font-bold">{preview.title}</h4>
+      <p className="text-sm text-gray-600">{preview.description}</p>
+      <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+        {url} <ExternalLink className="inline w-4 h-4" />
+      </a>
+    </div>
+  );
+};
 
 const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
   const [comments, setComments] = useState<ProcessedCommentType[]>([]);
@@ -44,21 +90,7 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchComments();
-    const channel = supabase
-      .channel('comments')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, () => {
-        fetchComments();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [blogId]);
-
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     const { data, error } = await supabase
       .from('comments')
       .select(`
@@ -80,7 +112,21 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
 
     const processedComments = processComments(data as CommentType[]);
     setComments(processedComments);
-  };
+  }, [blogId, supabase]);
+
+  useEffect(() => {
+    fetchComments();
+    const channel = supabase
+      .channel('comments')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, () => {
+        fetchComments();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchComments, supabase]);
 
   const processComments = (rawComments: CommentType[]): ProcessedCommentType[] => {
     const commentMap = new Map<string, ProcessedCommentType>();
@@ -102,7 +148,7 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
       if (comment.replyTo && commentMap.has(comment.replyTo)) {
         const parentComment = commentMap.get(comment.replyTo)!;
         parentComment.replies!.push(comment);
-        comment.level = parentComment.level + 1;
+        comment.level = Math.min(parentComment.level + 1, MAX_DEPTH);
       } else {
         rootComments.push(comment);
       }
@@ -184,6 +230,8 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
     const hasReplies = comment.replies && comment.replies.length > 0;
     const showToggle = hasReplies && comment.replies!.length > REPLIES_THRESHOLD;
 
+    const urls = linkify.find(comment.content).filter(link => link.type === 'url').map(link => link.href);
+
     return (
       <motion.div
         key={comment.id}
@@ -191,7 +239,7 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3 }}
-        className={`ml-${comment.level * 4} mt-4`}
+        className={`ml-${Math.min(comment.level * 4, 16)} mt-4`}
       >
         <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
           <div className="flex items-center justify-between mb-2">
@@ -210,10 +258,22 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
             </div>
           </div>
           <div className="flex items-start space-x-2 mb-2">
-            {comment.replyTo && <CornerDownRight className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />}
-            <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+            {comment.replyTo && (
+              <div className="flex items-center space-x-1 text-sm text-gray-500">
+                <CornerDownRight className="w-4 h-4" />
+                <span>返信先: {comment.replyTo}</span>
+              </div>
+            )}
           </div>
-          <div className="flex items-center space-x-4 text-sm">
+          <div className="mb-2">
+            <Linkify>
+              <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+            </Linkify>
+          </div>
+          {urls.map((url, index) => (
+            <LinkPreview key={index} url={url} />
+          ))}
+          <div className="flex items-center space-x-4 text-sm mt-2">
             <button
               onClick={() => toggleReply(comment.id)}
               className="text-blue-500 hover:text-blue-700 transition-colors duration-200 flex items-center space-x-1"
