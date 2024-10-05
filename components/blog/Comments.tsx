@@ -8,9 +8,10 @@ import { Send, Trash2, ChevronDown, ChevronUp, CornerDownRight, MessageCircle, E
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import Linkify from 'react-linkify';
-import linkify from 'linkifyjs';
+import * as linkify from 'linkifyjs';
 import { extract } from 'oembed-parser';
 import ReactPlayer from 'react-player';
+import Image from 'next/image';
 
 interface CommentType {
   id: string;
@@ -41,12 +42,19 @@ interface LinkPreviewProps {
   url: string;
 }
 
+interface PreviewData {
+  type?: string;
+  url?: string;
+  title?: string;
+  description?: string;
+}
+
 const REPLY_PREFIX = '@reply:';
 const REPLIES_THRESHOLD = 3;
 const MAX_DEPTH = 5;
 
 const LinkPreview: React.FC<LinkPreviewProps> = ({ url }) => {
-  const [preview, setPreview] = useState<any>(null);
+  const [preview, setPreview] = useState<PreviewData | null>(null);
 
   useEffect(() => {
     const fetchPreview = async () => {
@@ -64,7 +72,15 @@ const LinkPreview: React.FC<LinkPreviewProps> = ({ url }) => {
   if (!preview) return null;
 
   if (preview.type === 'photo') {
-    return <img src={preview.url} alt={preview.title} className="max-w-full h-auto rounded-lg shadow-md" />;
+    return (
+      <Image
+        src={preview.url || ''}
+        alt={preview.title || ''}
+        width={300}
+        height={200}
+        className="max-w-full h-auto rounded-lg shadow-md"
+      />
+    );
   }
 
   if (preview.type === 'video' && ReactPlayer.canPlay(url)) {
@@ -244,10 +260,12 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
         <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
-              <img
+              <Image
                 src={comment.profiles.avatar_url || '/noImage.png'}
                 alt={`${comment.profiles.name}'s avatar`}
-                className="w-10 h-10 rounded-full border-2 border-blue-500"
+                width={40}
+                height={40}
+                className="rounded-full border-2 border-blue-500"
               />
               <div>
                 <span className="font-semibold text-gray-800">{comment.profiles.name}</span>
