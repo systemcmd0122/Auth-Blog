@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { format } from 'date-fns';
-import { Send, Trash2, ChevronDown, ChevronUp, CornerDownRight, MessageCircle, ExternalLink } from 'lucide-react';
+import { Send, Trash2, ChevronDown, ChevronUp, MessageCircle, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 interface CommentType {
   id: string;
@@ -36,7 +37,7 @@ interface CommentsProps {
 
 const REPLY_PREFIX = '@reply:';
 const REPLIES_THRESHOLD = 3;
-const MAX_NESTING_LEVEL = 4; // ネストの最大レベル
+const MAX_NESTING_LEVEL = 4;
 
 const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
   const [comments, setComments] = useState<ProcessedCommentType[]>([]);
@@ -56,9 +57,9 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
-  }, [blogId]);
+  }, [blogId, supabase]); // Added supabase to dependencies
 
   const processComments = (rawComments: CommentType[]): ProcessedCommentType[] => {
     const commentMap = new Map<string, ProcessedCommentType>();
@@ -81,12 +82,10 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
         const parentComment = commentMap.get(comment.replyTo)!;
         comment.replyToContent = parentComment.content;
         
-        // ネストレベルの制限
         if (parentComment.level < MAX_NESTING_LEVEL) {
           parentComment.replies!.push(comment);
           comment.level = parentComment.level + 1;
         } else {
-          // 最大レベルを超える場合は、親と同じレベルに配置
           comment.level = parentComment.level;
           if (parentComment.replies) {
             parentComment.replies.push(comment);
@@ -100,7 +99,101 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
     return rootComments;
   };
 
-  // URL検出と処理のための関数
+  const fetchComments = async () => {
+    const { data, error } = await supabase
+      .from('comments')
+      .select(`
+        *,
+        profiles (
+          id,
+          name,
+          avatar_url
+        )
+      `)
+      .eq('blog_id', blogId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching comments:', error);
+      toast.error('コメントの取得に失敗しました。');
+      return;
+    }
+
+    const processedComments = processComments(data as CommentType[]);
+    setComments(processedComments);
+  };
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) {
+      toast.error('コメントを投稿するにはログインしてください。');
+      return;
+    }
+    if (!newComment.trim()) return;
+
+    setIsLoading(true);
+    try {
+      let content = newComment.trim();
+      if (replyingTo) {
+        content = `${REPLY_PREFIX}${replyingTo} ${content}`;
+      }
+
+      const { error } = await supabase.from('comments').insert({
+        blog_id: blogId,
+        user_id: currentUser.id,
+        profile_id: currentUser.id,
+        content: content,
+      });
+
+      if (error) throw error;
+
+      setNewComment('');
+      setReplyingTo(null);
+      toast.success('コメントを投稿しました。');
+      await fetchComments();
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+      toast.error('コメントの投稿に失敗しました。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!window.confirm('本当にこのコメントを削除しますか？')) return;
+
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentId);
+
+      if (error) throw error;
+
+      toast.success('コメントを削除しました。');
+      await fetchComments();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast.error('コメントの削除に失敗しました。');
+    }
+  };
+
+  const toggleReply = (commentId: string | null) => {
+    setReplyingTo(replyingTo === commentId ? null : commentId);
+  };
+
+  const toggleCollapsed = (commentId: string) => {
+    setCollapsedComments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(commentId)) {
+        newSet.delete(commentId);
+      } else {
+        newSet.add(commentId);
+      }
+      return newSet;
+    });
+  };
+
   const processContent = (content: string) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const parts = content.split(urlRegex);
@@ -110,12 +203,13 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
         const isImage = part.match(/\.(jpg|jpeg|png|gif|webp)$/i);
         if (isImage) {
           return (
-            <div key={index} className="my-2 max-w-md">
-              <img 
+            <div key={index} className="my-2 max-w-md relative h-96">
+              <Image 
                 src={part} 
                 alt="Shared content" 
-                className="rounded-lg max-h-96 object-contain"
-                loading="lazy"
+                className="rounded-lg object-contain"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </div>
           );
@@ -138,7 +232,6 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
     });
   };
 
-  // 残りの関数は同じですが、renderComment 関数を更新します
   const renderComment = (comment: ProcessedCommentType) => {
     const isCollapsed = collapsedComments.has(comment.id);
     const hasReplies = comment.replies && comment.replies.length > 0;
@@ -156,11 +249,15 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
         <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
-              <img
-                src={comment.profiles.avatar_url || '/noImage.png'}
-                alt={`${comment.profiles.name}'s avatar`}
-                className="w-10 h-10 rounded-full border-2 border-blue-500"
-              />
+              <div className="relative w-10 h-10">
+                <Image
+                  src={comment.profiles.avatar_url || '/noImage.png'}
+                  alt={`${comment.profiles.name}'s avatar`}
+                  className="rounded-full border-2 border-blue-500"
+                  fill
+                  sizes="40px"
+                />
+              </div>
               <div>
                 <span className="font-semibold text-gray-800">{comment.profiles.name}</span>
                 <p className="text-xs text-gray-500">
@@ -262,10 +359,6 @@ const Comments: React.FC<CommentsProps> = ({ blogId, currentUser }) => {
       </motion.div>
     );
   };
-
-  // その他の関数は変更なし
-  // fetchComments, handleSubmitComment, handleDeleteComment, toggleReply, toggleCollapsed は
-  // 元のコードと同じなので省略
 
   return (
     <div className="mt-8 bg-gray-100 rounded-lg shadow-lg p-6">
