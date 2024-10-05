@@ -1,15 +1,15 @@
 "use client"
 
-import React, { useState, useTransition, useEffect } from "react";
+import React, { useState, useTransition, useEffect, useRef } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Info, Loader2, Upload, Copy, Check } from "lucide-react";
+import { Info, Loader2, Upload, Copy, Check, Bold, Underline, FileCode, Link, Highlighter, Type, Strikethrough, Image as ImageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ImageUploading, { ImageListType } from "react-images-uploading";
 import toast from "react-hot-toast";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   Form,
@@ -41,6 +41,10 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
   ]);
   const [previewContent, setPreviewContent] = useState(blog.content);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [selectedText, setSelectedText] = useState({ text: "", start: 0, end: 0 });
+  const [showPopover, setShowPopover] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const form = useForm<z.infer<typeof BlogSchema>>({
     resolver: zodResolver(BlogSchema),
@@ -171,6 +175,74 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
     return () => subscription.unsubscribe();
   }, [form.watch]);
 
+  const handleTextSelection = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = textarea.value.substring(start, end);
+      
+      if (selectedText) {
+        setSelectedText({ text: selectedText, start, end });
+        const rect = textarea.getBoundingClientRect();
+        const selectionRect = window.getSelection()?.getRangeAt(0).getBoundingClientRect();
+        
+        if (selectionRect) {
+          setPopoverPosition({
+            top: selectionRect.top - rect.top - 40,
+            left: selectionRect.left - rect.left,
+          });
+        }
+        
+        setShowPopover(true);
+      } else {
+        setShowPopover(false);
+      }
+    }
+  };
+
+  const applyDecoration = (decoration: string) => {
+    const { text, start, end } = selectedText;
+    const content = form.getValues("content");
+    let decoratedText = "";
+
+    switch (decoration) {
+      case "bold":
+        decoratedText = `**${text}**`;
+        break;
+      case "underline":
+        decoratedText = `__${text}__`;
+        break;
+      case "code":
+        decoratedText = `\`\`\`${text}\`\`\``;
+        break;
+      case "link":
+        decoratedText = `[${text}](URL)`;
+        break;
+      case "highlight":
+        decoratedText = `==${text}==`;
+        break;
+      case "color":
+        decoratedText = `<color:#FF0000>${text}</color>`;
+        break;
+      case "size":
+        decoratedText = `<size:20px>${text}</size>`;
+        break;
+      case "strikethrough":
+        decoratedText = `~~${text}~~`;
+        break;
+      case "image":
+        decoratedText = `<image>${text}</image>`;
+        break;
+      default:
+        decoratedText = text;
+    }
+
+    const newContent = content.substring(0, start) + decoratedText + content.substring(end);
+    form.setValue("content", newContent);
+    setShowPopover(false);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -259,12 +331,91 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
                 <FormItem>
                   <FormLabel className="text-lg font-semibold">内容</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="ブログの内容を入力"
-                      {...field}
-                      disabled={isPending}
-                      className="w-full p-2 border rounded-md min-h-[300px]"
-                    />
+                    <div className="relative">
+                      <Textarea
+                        placeholder="ブログの内容を入力"
+                        {...field}
+                        disabled={isPending}
+                        className="w-full p-2 border rounded-md min-h-[300px]"
+                        ref={textareaRef}
+                        onMouseUp={handleTextSelection}
+                      />
+                      <AnimatePresence>
+                        {showPopover && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute bg-white shadow-lg rounded-md p-2 flex space-x-2"
+style={{ top: `${popoverPosition.top}px`, left: `${popoverPosition.left}px` }}
+                          >
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => applyDecoration("bold")}
+                            >
+                              <Bold size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => applyDecoration("underline")}
+                            >
+                              <Underline size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => applyDecoration("code")}
+                            >
+                              <FileCode size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => applyDecoration("link")}
+                            >
+                              <Link size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => applyDecoration("highlight")}
+                            >
+                              <Highlighter size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => applyDecoration("color")}
+                            >
+                              <Type size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => applyDecoration("size")}
+                            >
+                              <Type size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => applyDecoration("strikethrough")}
+                            >
+                              <Strikethrough size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => applyDecoration("image")}
+                            >
+                              <ImageIcon size={16} />
+                            </Button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -300,7 +451,7 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
             <Info className="mr-2 text-blue-500" />
             テキスト装飾ガイド
           </h3>
-           <ul className="space-y-2 text-gray-700">
+          <ul className="space-y-2 text-gray-700">
             <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">```code```</code> コードブロック（コピー可能）</li>
             <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">**text**</code> <strong className="font-bold">太字</strong></li>
             <li className="flex items-center"><code className="bg-gray-100 px-2 py-1 rounded mr-2">__text__</code> <span className="border-b-2 border-gray-500">下線</span></li>
@@ -317,14 +468,15 @@ const BlogEdit: React.FC<BlogEditProps> = ({ blog }) => {
               {['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'].map((color) => (
                 <div key={color} className="flex items-center">
                   <div className="w-6 h-6 rounded mr-1" style={{ backgroundColor: color }}></div>
-                <code className="text-sm">{color}</code>
-              </div>
-            ))}
+                  <code className="text-sm">{color}</code>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
-</motion.div>
+    </motion.div>
   );
-    };
+};
+
 export default BlogEdit;
